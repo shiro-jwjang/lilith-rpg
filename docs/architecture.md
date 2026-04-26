@@ -1,6 +1,6 @@
 # 로구라이크 RPG — 아키텍처 설계서 (v0.1 Draft)
 
-> Godot 4 · GDScript · 1막 MVP
+> Godot 4 · GDScript · 1막 MVP · 3-Tier Presentation
 
 ---
 
@@ -8,6 +8,100 @@
 
 
 ---
+
+---
+
+## 0. 프레젠테이션 3계층 아키텍처
+
+게임 로직과 프레젠테이션을 분리하여 3단계로 개발. 아래 계층(로직)은 상위 계층(프레젠테이션)에 의존하지 않음.
+
+```
+┌─────────────────────────────────────────────┐
+│          Layer 3: 그래픽 (출시용)            │
+│     Godot 씬 (BattleScreen, MapScreen, ...)  │
+├─────────────────────────────────────────────┤
+│          Layer 2: 텍스트 터미널 (개발용)      │
+│     RichTextLabel 기반 텍스트 어드벤처 UI    │
+├─────────────────────────────────────────────┤
+│          Layer 1: Headless (시뮬레이션)       │
+│     godot --headless, 화면 없이 로직만 실행   │
+├─────────────────────────────────────────────┤
+│          Core: 순수 로직 계층 (모든 계층 공유) │
+│  BattleEngine, TurnManager, DamageCalculator │
+│  MapGenerator, RewardPool, EventResolver     │
+│  InventoryManager, Wallet, Combatant         │
+├─────────────────────────────────────────────┤
+│          GameRunner (인터페이스 계층)         │
+│  로직 결과를 프레젠테이션으로 브릿징          │
+└─────────────────────────────────────────────┘
+```
+
+### 0-1. 각 계층 설명
+
+| 계층 | 목적 | 실행 방식 | 주요 용도 |
+|------|------|----------|----------|
+| **Headless** | 로직 검증, 밸런싱 | `godot --headless --script simulation.gd` | CI 테스트, 밸런싱 시뮬레이션, 회귀 테스트 |
+| **터미널** | 게임플레이 검증 | Godot 에디터/실행파일 | 개발 중 전체 흐름 플레이, 디버깅 |
+| **그래픽** | 출시 | Godot 에디터/실행파일 | 최종 제품, UX 검증 |
+
+### 0-2. 개발 진행 순서
+
+```
+Core 로직 구현 (RefCounted)
+  → Headless로 전투/맵/보상 단위 테스트
+    → 터미널 UI로 전체 게임 루프 검증
+      → 그래픽 UI 적용
+```
+
+### 0-3. GameRunner — 프레젠테이션 브릿지
+
+`GameRunner`는 순수 로직 계층과 프레젠테이션 사이의 얇은 어댑터. 게임 전체 흐름(턴 실행, 노드 진입, 보상 지급 등)을 오케스트레이션하고, 결과를 시그널로 프레젠테이션에 전달.
+
+```gdscript
+# game_runner.gd
+extends RefCounted
+
+signal battle_state_changed(state: Dictionary)   # 턴, HP, 상태이상 등
+signal map_state_changed(state: Dictionary)       # 노드 목록, 현재 위치
+signal player_input_requested(choices: Array)     # 프레젠테이션이 입력 UI 표시
+signal message_logged(text: String)               # 게임 로그 (터미널/디버그용)
+signal run_ended(result: Dictionary)              # 런 결과
+
+var battle_engine: BattleEngine
+var turn_manager: TurnManager
+var map_generator: MapGenerator
+# ... 기타 코어 시스템 소유
+
+func start_run(config: Dictionary = {}) -> void:
+    _init_party(config)
+    _generate_floor(1)
+    _enter_first_node()
+
+func execute_player_action(action_id: String, targets: Array = []) -> void:
+    var result = battle_engine.execute_action(action_id, targets)
+    battle_state_changed.emit(result)
+```
+
+각 프레젠테이션 계층은 `GameRunner`의 시그널을 구독:
+- **Headless**: 시그널을 로그로 출력, 입력은 스크립트에서 직접 주입
+- **터미널**: `RichTextLabel`에 텍스트로 렌더링, 버튼으로 선택지 제공
+- **그래픽**: 씬 UI(HUD, 애니메이션 등)로 렌더링
+
+### 0-4. 코어 로직의 Node 의존성 제거 원칙
+
+`GameRunner`와 그 아래 코어 로직은 **`Node`가 아닌 `RefCounted`**로 구현. 이 원칙이 지켜지면 `godot --headless`로 실행 가능.
+
+| 대상 | 기존 | 변경 |
+|------|------|------|
+| `BattleEngine` | `extends Node` | `extends RefCounted` |
+| `MapGenerator` | `extends Node` | `extends RefCounted` |
+| `GameRunner` | (없음) | `extends RefCounted` |
+| `EventBus` | `extends Node` (오토로드) | **오토로드 유지** — 시그널 허브는 Node 필요 |
+| `RunState` | `extends Node` (오토로드) | **오토로드 유지** — 싱글톤 필요 |
+| `DataTables` | `extends Node` (오토로드) | **오토로드 유지** — `_ready()`에서 로드 |
+| `SceneManager` | `extends Node` (오토로드) | **그래픽/터미널 전용** — headless에서는 미사용 |
+
+> **참고**: `EventBus`, `RunState`, `DataTables`는 오토로드로 유지하되, headless에서는 `GameRunner`가 이들을 직접 생성/주입하는 방식으로 대체 가능. `SceneManager`는 그래픽/터미널 계층에서만 사용.
 
 ## 1. 디렉토리 구조
 
@@ -19,8 +113,16 @@ project/
 │   ├── run_state.gd
 │   ├── data_tables.gd
 │   ├── save_manager.gd
-│   └── scene_manager.gd
+│   ├── scene_manager.gd         # 그래픽/터미널 전용
+│   └── game_runner.gd           # 게임 오케스트레이터
 ├── scenes/
+│   ├── terminal/                # Layer 2: 텍스트 터미널
+│   │   ├── terminal_screen.tscn
+│   │   ├── battle_view.tscn     # 터미널용 전투 뷰
+│   │   ├── map_view.tscn        # 터미널용 맵 뷰
+│   │   └── components/
+│   │       ├── text_log.gd      # RichTextLabel 래퍼
+│   │       └── choice_panel.gd  # 텍스트 선택지 UI
 │   ├── main.tscn                # 루트 씬 (Window → SceneSwitcher)
 │   ├── title/
 │   │   └── title_screen.tscn
@@ -85,6 +187,10 @@ project/
 │   └── saves/
 │       ├── persistent.json      # 해금 등 영구 데이터
 │       └── run_save.json        # 런 중단용 세이브 (선택)
+├── headless/                    # Layer 1: Headless 시뮬레이션 스크립트
+│   ├── simulation.gd           # 전체 런 시뮬레이션
+│   ├── balance_test.gd         # 밸런싱 테스트 (N회 런 통계)
+│   └── regression_test.gd      # 회귀 테스트
 ├── resources/                   # Godot Resource (.tres) — 필요시만
 └── tests/                       # GUT 단위 테스트
     ├── test_damage_calculator.gd
@@ -133,7 +239,7 @@ BattleScreen (Control)
 │   └── [SkillButton × N]
 ├── BattleLog (RichTextLabel)
 ├── AnimationPlayer
-└── BattleEngine (Node)           # 로직 컨트롤러 (스크립트만, 시각 없음)
+└── BattleEngine (RefCounted)      # 로직 컨트롤러 (Nodeless)
 ```
 
 ### 2-4. 맵 씬 (`map_screen.tscn`)
@@ -169,7 +275,7 @@ Combatant (ResourceRefCounted)        # 전투원 데이터 베이스
 ├── EnemyUnit : Combatant             # 적
 │   └── ai_priority_table: Dictionary
 │
-BattleEngine (Node)                   # 전투 씬의 루트 로직
+BattleEngine (RefCounted)              # 전투 엔진 (Nodeless — headless 대응)
 ├── turn_manager: TurnManager
 ├── damage_calculator: DamageCalculator
 ├── status_system: StatusEffectSystem
@@ -182,7 +288,7 @@ DamageCalculator (RefCounted)         # 피해 계산 (순수 함수)
 StatusEffectSystem (RefCounted)       # 상태이상 적용/해제
 EnemyAI (RefCounted)                  # 적 행동 결정
 │
-MapGenerator (Node)                   # 노드 그래프 생성
+MapGenerator (RefCounted)              # 노드 그래프 생성 (Nodeless — headless 대응)
 MapNode (RefCounted)                  # 단일 노드 데이터
 │
 EventResolver (RefCounted)            # 이벤트 선택지 평가
@@ -201,6 +307,8 @@ Wallet (RefCounted)                   # 골드 관리
 | **순수 로직 분리** | `DamageCalculator`, `RewardPool`은 Godot Node 없이 `RefCounted` — GUT 테스트 용이 |
 | **UI와 로직 분리** | 씬의 컨트롤러 노드는 로직만 담고, UI는 시그널로 구독 |
 | **데이터와 행동 분리** | `Combatant`는 데이터이고, 행동은 `BattleEngine`이 수행 |
+| **프레젠테이션 3계층** | Headless → 터미널 → 그래픽. `GameRunner`가 로직과 UI 사이 브릿지 |
+| **코어 Nodeless** | `BattleEngine`, `MapGenerator`, `GameRunner`는 `RefCounted` — headless 호환 |
 
 ---
 
@@ -350,7 +458,7 @@ func _on_damage_dealt(target: Combatant, amount: int, is_crit: bool) -> void:
 ### 6-1. BattleEngine — 전체 흐름
 
 ```
-BattleEngine (Node)
+BattleEngine (RefCounted)
 │
 │  1. setup(enemy_ids)          — 적 생성, 턴 큐 초기화
 │  2. start_battle()            — 첫 턴 시작
@@ -513,7 +621,7 @@ func _check_boss_phase_transition() -> void:
 
 ```gdscript
 # map_generator.gd
-extends Node
+extends RefCounted
 
 const FLOOR_CONFIGS = {
     1: { node_count_range = [3, 4], boss_required = false },
@@ -969,6 +1077,10 @@ func _resolve_path(target: String) -> String:
         "campfire":    return "res://scenes/campfire/campfire_screen.tscn"
         "boss_result": return "res://scenes/boss_result/boss_result_screen.tscn"
         "run_over":    return "res://scenes/run_over/run_over_screen.tscn"
+        # Layer 2: 터미널 모드
+        "terminal":          return "res://scenes/terminal/terminal_screen.tscn"
+        "terminal_battle":   return "res://scenes/terminal/battle_view.tscn"
+        "terminal_map":      return "res://scenes/terminal/map_view.tscn"
         _:             return "res://scenes/title/title_screen.tscn"
 
 func _load_scene(path: String, params: Dictionary) -> void:
@@ -1196,11 +1308,67 @@ func test_weighted_random_deterministic():
     assert_eq(results.all(func(r): return r == "gold_50"), true)
 ```
 
-### 15-3. 테스트 실행
+### 15-3. GUT 테스트 실행
 
 ```
 프로젝트 설정 → GUT 플러그인 추가
 명령줄: godot --path . --script addons/gut/gut_cmdln.gd -dtest=tests/
+```
+
+### 15-4. Headless 시뮬레이션
+
+`godot --headless`로 화면 없이 로직만 실행. 밸런싱 검증, 회귀 테스트, CI 통합에 사용.
+
+```bash
+# 전체 런 시뮬레이션 (1회)
+godot --headless --script headless/simulation.gd
+
+# 밸런싱 테스트 (1000회 런, 통계 출력)
+godot --headless --script headless/balance_test.gd --count=1000
+
+# 회귀 테스트
+godot --headless --script headless/regression_test.gd
+```
+
+```gdscript
+# headless/simulation.gd 예시
+extends SceneTree
+
+func _init() -> void:
+    var runner = GameRunner.new()
+    runner.message_logged.connect(func(msg): print(msg))
+    runner.run_ended.connect(func(result): _print_summary(result); quit())
+    runner.start_run()
+
+func _print_summary(result: Dictionary) -> void:
+    print("=== 런 결과 ===")
+    print("승리: %s" % result.victory)
+    print("턴 수: %d" % result.turns)
+    print("보스 처치: %s" % str(result.bosses_defeated))
+```
+
+### 15-5. 밸런싱 시뮬레이션 예시
+
+```gdscript
+# headless/balance_test.gd
+extends SceneTree
+
+func _init() -> void:
+    var win_count = 0
+    var run_count = 1000
+    var turn_counts: Array[int] = []
+
+    for i in run_count:
+        var runner = GameRunner.new()
+        runner.start_run({ "auto_play": true })
+        var result = await runner.run_completed
+        if result.victory:
+            win_count += 1
+        turn_counts.append(result.turns)
+
+    print("승률: %.1f%%" % (float(win_count) / run_count * 100))
+    print("평균 턴 수: %.1f" % (float(turn_counts.reduce(func(a, b): return a + b, 0)) / run_count)
+    quit()
 ```
 
 ---
@@ -1208,18 +1376,26 @@ func test_weighted_random_deterministic():
 ## 부록 A: 전체 씬 전환 시그널 흐름
 
 ```
-MapScreen
-  └─ node_selected(node)
-       └─ SceneManager.go_to("battle", {enemy_ids: [...]})
-            └─ BattleScreen.init(params)
+GameRunner
+  └─ start_run()
+       └─ _generate_floor()
+            └─ map_state_changed.emit()
+                 ├─ [그래픽] MapScreen → 노드 UI 표시
+                 ├─ [터미널] MapView → 텍스트로 노드 목록 출력
+                 └─ [Headless] print() → 로그 출력
+       └─ _enter_node(node)
+            └─ (전투 노드인 경우)
                  └─ BattleEngine.setup(enemy_ids)
                       └─ BattleEngine.start_battle()
-                           └─ EventBus.battle_started.emit()
-                                ...
-                           └─ EventBus.battle_ended.emit(victory, rewards)
-                                └─ BattleScreen._on_battle_ended()
-                                     └─ SceneManager.go_to("map")
-                                          └─ MapScreen.init() → map 갱신
+                           └─ battle_state_changed.emit()
+                                ├─ [그래픽] BattleScreen → HUD 업데이트, 애니메이션
+                                ├─ [터미널] BattleView → RichTextLabel에 텍스트 출력
+                                └─ [Headless] print() → 턴 로그
+                           └─ player_input_requested.emit(choices)
+                                ├─ [그래픽] SkillPanel 활성화
+                                ├─ [터미널] ChoicePanel 버튼 표시
+                                └─ [Headless] AI 자동 결정
+                           └─ run_ended.emit(result)
 ```
 
 ## 부록 B: JSON 테이블 ID 네이밍 컨벤션
@@ -1237,4 +1413,4 @@ MapScreen
 
 ---
 
-*문서 버전: v0.1 Draft | 작성일: 2026-04-26*
+*문서 버전: v0.2 Draft | 작성일: 2026-04-26 — 3-Tier Presentation 아키텍처 추가*
