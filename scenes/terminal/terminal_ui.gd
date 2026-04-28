@@ -142,7 +142,14 @@ func _on_battle_state(state: Dictionary) -> void:
 func _on_input_requested(choices: Array) -> void:
 	_clear_choices()
 	if _current_state == "combat":
+		# 현재 턴 캐릭터 표시
+		var turn_unit = runner._current_turn
+		var turn_name := ""
+		if turn_unit != null:
+			turn_name = String(turn_unit.get("name", "")) if turn_unit.get("name", "") != "" else "아군"
 		append_text("")
+		if turn_name != "":
+			append_text("[color=yellow]▶ %s의 턴[/color]" % turn_name)
 		append_text("[color=cyan]─ 행동 선택 ─[/color]")
 		for i in range(choices.size()):
 			var skill: Dictionary = choices[i]
