@@ -23,12 +23,17 @@ func _setup_ui() -> void:
 	anchor_right = 1.0
 	anchor_bottom = 1.0
 
+	var font: FontFile = load("res://assets/fonts/NotoSansKR.tres")
+	var font_size := 18
+
 	status_label = RichTextLabel.new()
 	status_label.anchor_right = 1.0
 	status_label.anchor_bottom = 0.08
 	status_label.bbcode_enabled = true
 	status_label.scroll_active = false
 	status_label.fit_content = true
+	status_label.add_theme_font_override("normal_font", font)
+	status_label.add_theme_font_size_override("normal_font_size", font_size)
 	add_child(status_label)
 
 	text_log = RichTextLabel.new()
@@ -37,6 +42,8 @@ func _setup_ui() -> void:
 	text_log.anchor_bottom = 0.75
 	text_log.bbcode_enabled = true
 	text_log.scroll_following = true
+	text_log.add_theme_font_override("normal_font", font)
+	text_log.add_theme_font_size_override("normal_font_size", font_size)
 	add_child(text_log)
 
 	var scroll := ScrollContainer.new()
@@ -414,6 +421,9 @@ func _add_choice(text: String, method: String, args: Array) -> void:
 		return
 	var button := Button.new()
 	button.text = text
+	var font: FontFile = load("res://assets/fonts/NotoSansKR.tres")
+	button.add_theme_font_override("font", font)
+	button.add_theme_font_size_override("font_size", 16)
 	button.pressed.connect(_make_choice_callback(method, args))
 	choice_container.add_child(button)
 

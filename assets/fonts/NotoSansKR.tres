@@ -1,0 +1,4 @@
+[gd_resource type="FontFile" format=3 uid="uid://lilith_notosanskr"]
+
+[resource]
+font_path = "res://assets/fonts/NotoSansKR-Regular.ttf"
