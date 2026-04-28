@@ -99,6 +99,14 @@ class _StubContentData extends RefCounted:
 		}
 
 
+class _MpCostContentData extends _StubContentData:
+	func _init() -> void:
+		super._init()
+		skill_map["마법지원가"] = [
+			{"name": "화염", "mp_cost": 5, "multiplier": 1.1, "target": "single"},
+		]
+
+
 class _CaptureBattleManager extends RefCounted:
 	var ally_configs: Array = []
 	var enemy_configs: Array = []
@@ -700,6 +708,182 @@ func test_shop_purchase_reduces_gold() -> void:
 	assert_true(bool(result.get("success", false)), "shop purchase should succeed")
 	assert_true(int(runner.wallet.get_gold()) < gold_before, "shop purchase should reduce gold")
 	assert_has(runner.inventory.equipment, "상점 검", "shop purchase should add the item to inventory")
+
+
+func test_restart_resets_all_state() -> void:
+	var battle_manager = _CaptureBattleManager.new()
+	var reward_manager = _CaptureRewardManager.new()
+	var runner = _make_runner({
+		"battle_manager": battle_manager,
+		"reward_manager": reward_manager,
+		"act": _playthrough_act(),
+	})
+
+	runner.start_run({"act": _playthrough_act()})
+	assert_true(bool(runner.select_node("floor1_node3").get("ok", false)), "restart reset should allow a first run node selection")
+	assert_eq(String(runner.enter_node().get("type", "")), "campfire", "restart reset should enter the first run campfire")
+	assert_true(bool(runner.complete_node().get("success", false)), "restart reset should complete the first run campfire")
+	assert_true(bool(runner.select_node("floor2_node4").get("ok", false)), "restart reset should allow the first run shop selection")
+	assert_eq(String(runner.enter_node().get("type", "")), "shop", "restart reset should enter the first run shop")
+	assert_true(bool(runner.complete_node().get("success", false)), "restart reset should complete the first run shop")
+	assert_true(bool(runner.select_node("floor3_node3").get("ok", false)), "restart reset should allow the first run boss selection")
+	assert_eq(String(runner.enter_node().get("type", "")), "boss", "restart reset should enter the first run boss")
+	battle_manager.battle_end_result = "victory"
+	assert_true(bool(runner.complete_node().get("success", false)), "restart reset should finish the first run")
+	assert_true(bool(runner.run_state.get("ended", false)), "restart reset should end the first run")
+	assert_gt((runner.run_state.get("nodes_visited", []) as Array).size(), 0, "restart reset should record visited nodes in the first run")
+	assert_gt(int(runner.run_state.get("combats_won", 0)), 0, "restart reset should record combat wins in the first run")
+	assert_gt(int(runner.run_state.get("gold_earned", 0)), 0, "restart reset should record gold in the first run")
+
+	runner.start_run({"act": _act_with_single_node("campfire")})
+	assert_eq(int(runner.run_state.get("current_floor", 0)), 1, "restart reset should restart at floor 1")
+	assert_eq((runner.run_state.get("nodes_visited", []) as Array).size(), 0, "restart reset should clear visited nodes")
+	assert_eq(int(runner.run_state.get("combats_won", 0)), 0, "restart reset should clear combat wins")
+	assert_eq(int(runner.run_state.get("gold_earned", 0)), 0, "restart reset should clear earned gold")
+	assert_false(bool(runner.run_state.get("ended", true)), "restart reset should clear ended state")
+	assert_false(bool(runner.run_state.get("victory", true)), "restart reset should clear victory state")
+	assert_null(runner.current_node, "restart reset should clear the current node")
+
+	assert_true(bool(runner.select_node("floor1_node1").get("ok", false)), "restart reset should allow the second run selection")
+	assert_eq(String(runner.enter_node().get("type", "")), "campfire", "restart reset should allow the second run node entry")
+	assert_true(bool(runner.complete_node().get("success", false)), "restart reset should allow the second run node completion")
+	assert_eq(int(runner.run_state.get("current_floor", 0)), 2, "restart reset should continue progressing after restart")
+
+
+func test_event_triggers_combat() -> void:
+	var battle_manager = _CaptureBattleManager.new()
+	var event_manager = EVENT_MANAGER_SCRIPT.new({"rng": _DeterministicRng.new([0.75, 0.0])})
+	var runner = _make_runner({
+		"battle_manager": battle_manager,
+		"event_manager": event_manager,
+		"act": _act_with_single_node("event", {"event_id": "ruined_altar"}),
+	})
+
+	runner.start_run({"event_manager": event_manager, "act": _act_with_single_node("event", {"event_id": "ruined_altar"})})
+	assert_true(bool(runner.select_node("floor1_node1").get("ok", false)), "event combat should allow selecting the event node")
+	var enter_result: Dictionary = runner.enter_node()
+	assert_eq(String(enter_result.get("type", "")), "event", "event combat should enter an event node")
+
+	var choices: Array = enter_result.get("data", {}).get("choices", []) as Array
+	var combat_choice_id := ""
+	var combat_result: Dictionary = {}
+	for choice in choices:
+		var choice_id := String(choice.get("id", ""))
+		var resolved: Dictionary = runner.resolve_event_choice(choice_id)
+		if bool(resolved.get("combat_triggered", false)):
+			combat_choice_id = choice_id
+			combat_result = resolved
+			break
+	if combat_choice_id.is_empty():
+		return
+
+	assert_true(bool(combat_result.get("combat_triggered", false)), "event combat should report that combat was triggered")
+	var combat_data: Dictionary = combat_result.get("combat", {})
+	assert_false(combat_data.is_empty(), "event combat should include combat payload data")
+	assert_has(combat_data, "battle_type", "event combat should include battle type")
+	assert_has(combat_data, "enemy", "event combat should include an enemy id")
+
+	runner.enter_combat(runner._get_enemy_configs_for_tier(String(combat_data.get("battle_type", "normal"))))
+	assert_gt(battle_manager.enemies.size(), 0, "event combat should prepare at least one enemy")
+	battle_manager.battle_end_result = "victory"
+	assert_true(bool(runner.complete_node().get("success", false)), "event combat should still allow the event node to complete after the follow-up combat")
+	assert_eq(int(runner.run_state.get("current_floor", 0)), 2, "event combat should still advance after completing the event node")
+
+
+func test_shop_purchase_with_insufficient_gold() -> void:
+	var runner = _make_runner({"act": _act_with_single_node("shop")})
+	runner.start_run({"starting_gold": 0, "act": _act_with_single_node("shop")})
+	runner.shop_manager = _StubShopManager.new(runner.wallet)
+	assert_true(bool(runner.select_node("floor1_node1").get("ok", false)), "insufficient gold should allow selecting the shop")
+	var enter_result: Dictionary = runner.enter_node()
+	assert_eq(String(enter_result.get("type", "")), "shop", "insufficient gold should enter the shop")
+
+	var items: Array = enter_result.get("data", {}).get("items", []) as Array
+	assert_gt(items.size(), 0, "insufficient gold should expose at least one shop item")
+	var expensive_index := 0
+	var expensive_price := -1
+	for index in range(items.size()):
+		var item_price := int((items[index] as Dictionary).get("price", 0))
+		if item_price > expensive_price:
+			expensive_price = item_price
+			expensive_index = index
+
+	var equipment_before: Array = runner.inventory.equipment.duplicate(true)
+	var potions_before: Dictionary = runner.inventory.potions.duplicate(true)
+	var result: Dictionary = runner.shop_purchase(expensive_index)
+	assert_false(bool(result.get("success", true)), "insufficient gold purchase should fail")
+	assert_eq(String(result.get("reason", "")), "insufficient_gold", "insufficient gold purchase should explain the failure")
+	assert_ge(int(runner.wallet.get_gold()), 0, "insufficient gold purchase should not make gold negative")
+	assert_eq(runner.inventory.equipment, equipment_before, "insufficient gold purchase should not add equipment")
+	assert_eq(runner.inventory.potions, potions_before, "insufficient gold purchase should not add potions")
+
+
+func test_unique_enemy_combat() -> void:
+	var battle_manager = _CaptureBattleManager.new()
+	var reward_generator = _FixedRewardGenerator.new()
+	var reward_manager = _CaptureRewardManager.new()
+	var runner = _make_runner({
+		"battle_manager": battle_manager,
+		"reward_generator": reward_generator,
+		"reward_manager": reward_manager,
+		"act": _playthrough_act(),
+	})
+
+	runner.start_run({"act": _playthrough_act()})
+	assert_true(runner.advance_floor(), "unique combat should advance to floor 2")
+	assert_true(runner.advance_floor(), "unique combat should advance to floor 3")
+	assert_true(bool(runner.select_node("floor3_node2").get("ok", false)), "unique combat should select the floor 3 unique node")
+	var enter_result: Dictionary = runner.enter_node()
+	assert_eq(String(enter_result.get("type", "")), "unique", "unique combat should enter a unique node")
+	assert_eq(String(battle_manager.enemy_configs[0].get("tier", "")), "unique", "unique combat should load unique enemies")
+
+	battle_manager.battle_end_result = "victory"
+	var complete_result: Dictionary = runner.complete_node()
+	assert_true(bool(complete_result.get("success", false)), "unique combat should complete successfully")
+	assert_eq(int(runner.run_state.get("combats_won", 0)), 1, "unique combat should increment combats won")
+	assert_eq(reward_generator.generated_types, ["unique"], "unique combat should request unique-tier rewards")
+	assert_eq(reward_manager.calls.size(), 1, "unique combat should grant rewards once")
+	assert_has(runner.inventory.equipment, "reward_sword", "unique combat should grant the fixed reward item")
+
+
+func test_combat_consumes_mp() -> void:
+	var battle_manager = _CaptureBattleManager.new()
+	var runner = _make_runner({
+		"battle_manager": battle_manager,
+		"content_data": _MpCostContentData.new(),
+		"act": _act_with_single_node("combat", {"tier": "normal"}),
+	})
+
+	runner.start_run({"act": _act_with_single_node("combat", {"tier": "normal"})})
+	assert_true(bool(runner.select_node("floor1_node1").get("ok", false)), "mp combat should allow selecting the combat node")
+	assert_eq(String(runner.enter_node().get("type", "")), "combat", "mp combat should enter combat")
+
+	var mage_index := 2
+	var initial_mp := int(runner.party[mage_index].get("current_mp", 0))
+	battle_manager.turn_results = [{
+		"unit": battle_manager.allies[mage_index],
+		"action_allowed": true,
+		"dot_damage": 0,
+		"battle_result": null,
+	}]
+	var turn_result: Dictionary = runner.next_turn()
+	assert_eq(turn_result.get("unit", null), battle_manager.allies[mage_index], "mp combat should hand the turn to the mage")
+	var attack_result: Dictionary = runner.player_attack(0)
+	assert_true(bool(attack_result.get("ok", false)), "mp combat should allow using the MP-costing skill")
+	assert_true(int(runner.party[mage_index].get("current_mp", 0)) < initial_mp, "mp combat should reduce MP after skill use")
+
+	runner.party[mage_index]["current_mp"] = 0
+	battle_manager.allies[mage_index].current_mp = 0
+	battle_manager.turn_results = [{
+		"unit": battle_manager.allies[mage_index],
+		"action_allowed": true,
+		"dot_damage": 0,
+		"battle_result": null,
+	}]
+	runner.next_turn()
+	var insufficient_result: Dictionary = runner.player_attack(0)
+	assert_false(bool(insufficient_result.get("ok", true)), "mp combat should reject the skill when MP is insufficient")
+	assert_eq(String(insufficient_result.get("error", "")), "Not enough MP", "mp combat should explain the insufficient MP failure")
 
 
 func test_treasure_rewards_not_duplicated() -> void:
