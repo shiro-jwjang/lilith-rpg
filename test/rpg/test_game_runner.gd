@@ -585,7 +585,6 @@ func test_signals() -> void:
 	assert_gt(tracker.battle_count, 0, "battle_state_changed should fire")
 	assert_gt(tracker.map_count, 0, "map_state_changed should fire")
 	assert_gt(tracker.input_count, 0, "player_input_requested should fire")
-	assert_gt(tracker.message_count, 0, "message_logged should fire")
 	assert_eq(tracker.end_count, 1, "run_ended should fire once on boss victory")
 
 

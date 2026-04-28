@@ -216,7 +216,6 @@ func enter_combat(enemy_configs: Array) -> void:
 	_current_battle_type = _resolve_battle_type(enemy_configs)
 	battle_manager.init_battle(_build_party_battle_configs(), enemy_configs)
 	_current_turn = null
-	emit_signal("message_logged", "Combat started")
 	emit_signal("battle_state_changed", get_battle_status())
 
 
@@ -236,7 +235,7 @@ func next_turn() -> Dictionary:
 			_current_turn = null
 			emit_signal("battle_state_changed", get_battle_status())
 			if battle_result == "victory":
-				emit_signal("message_logged", "Battle won")
+				pass
 			elif battle_result == "defeat":
 				run_state["defeat"] = true
 				run_state["ended"] = true
@@ -277,8 +276,6 @@ func next_turn() -> Dictionary:
 				run_state["defeat"] = true
 				run_state["ended"] = true
 				emit_signal("run_ended", {"victory": false, "reason": "defeat"})
-			else:
-				emit_signal("message_logged", "Battle won")
 			emit_signal("battle_state_changed", get_battle_status())
 			return turn_result
 		turn_result["auto_action"] = auto_action
@@ -307,7 +304,7 @@ func player_attack(skill_index: int) -> Dictionary:
 
 	var mp_cost := int(skill.get("mp_cost", 0))
 	if int(_current_turn.current_mp) < mp_cost:
-		return {"ok": false, "error": "Not enough MP"}
+		return {"ok": false, "error": "MP가 부족합니다"}
 
 	_current_turn.use_mp(mp_cost)
 	var multiplier := float(skill.get("multiplier", 1.0))
@@ -668,6 +665,8 @@ func _execute_enemy_turn(unit) -> Dictionary:
 		skill = skills[0]
 	var ally_candidates: Array = []
 	for ally in battle_manager.allies:
+		if not ally.is_alive():
+			continue
 		ally_candidates.append({
 			"unit": ally,
 			"internal_id": int(ally.internal_id),

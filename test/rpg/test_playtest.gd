@@ -1063,7 +1063,7 @@ func test_combat_consumes_mp() -> void:
 	runner.next_turn()
 	var insufficient_result: Dictionary = runner.player_attack(0)
 	assert_false(bool(insufficient_result.get("ok", true)), "mp combat should reject the skill when MP is insufficient")
-	assert_eq(String(insufficient_result.get("error", "")), "Not enough MP", "mp combat should explain the insufficient MP failure")
+	assert_eq(String(insufficient_result.get("error", "")), "MP가 부족합니다", "mp combat should explain the insufficient MP failure")
 
 
 func test_treasure_rewards_not_duplicated() -> void:
