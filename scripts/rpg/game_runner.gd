@@ -258,12 +258,22 @@ func next_turn() -> Dictionary:
 			emit_signal("player_input_requested", choices)
 			return turn_result
 
-			var auto_action := _execute_enemy_turn(acting_unit)
+		# 적 턴 — 자동 공격 후 다음 턴 진행
+		var auto_action := _execute_enemy_turn(acting_unit)
+		_sync_party_from_battle()
+		var battle_end = battle_manager.check_battle_end()
+		if battle_end != null:
+			turn_result["battle_result"] = battle_end
+			if battle_end == "defeat":
+				run_state["defeat"] = true
+				run_state["ended"] = true
+				emit_signal("run_ended", {"victory": false, "reason": "defeat"})
+			else:
+				emit_signal("message_logged", "Battle won")
 			emit_signal("battle_state_changed", get_battle_status())
-			if battle_manager.check_battle_end() != null:
-				turn_result["battle_result"] = battle_manager.check_battle_end()
-				return turn_result
-			turn_result["auto_action"] = auto_action
+			return turn_result
+		turn_result["auto_action"] = auto_action
+		# 적 턴 끝났으니 while 루프 계속 → 다음 유닛 처리
 	return {}
 
 
