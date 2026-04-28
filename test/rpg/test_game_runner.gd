@@ -158,6 +158,11 @@ class _StubEventManager extends RefCounted:
 	var last_event_id := ""
 	var last_choice_id := ""
 
+	func get_event(event_id: String) -> RefCounted:
+		var EVENT_BASE = load("res://scripts/rpg/events/event_base.gd")
+		var stub = EVENT_BASE.new({"event_id": event_id, "title": "테스트 이벤트"})
+		return stub
+
 	func get_visible_choices(event_id: String, _context: Dictionary) -> Array:
 		last_event_id = event_id
 		return choices.duplicate(true)
