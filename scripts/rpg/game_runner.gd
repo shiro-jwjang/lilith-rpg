@@ -53,6 +53,7 @@ var _enemy_ai = null
 var _current_turn = null
 var _current_battle_type: String = "normal"
 var _last_shop_visit: Dictionary = {}
+var _last_treasure_result: Dictionary = {}
 
 
 func _init(config: Dictionary = {}) -> void:
@@ -136,6 +137,7 @@ func start_run(config: Dictionary = {}) -> void:
 	_current_turn = null
 	_current_battle_type = "normal"
 	_last_shop_visit = {}
+	_last_treasure_result = {}
 
 	run_state = {
 		"victory": false,
@@ -200,7 +202,8 @@ func enter_node() -> Dictionary:
 		"campfire":
 			return {"type": "campfire", "data": enter_campfire()}
 		"treasure":
-			return {"type": "treasure", "data": enter_treasure()}
+			_last_treasure_result = enter_treasure()
+			return {"type": "treasure", "data": _last_treasure_result}
 		_:
 			return {"ok": false, "error": "Unsupported node type"}
 
@@ -476,6 +479,7 @@ func advance_floor() -> bool:
 	run_state["current_floor"] = map_manager.current_floor_number
 	current_node = null
 	run_state["current_node_id"] = ""
+	_last_treasure_result = {}
 	_emit_map_state()
 	return true
 
@@ -503,7 +507,8 @@ func complete_node() -> Dictionary:
 				run_state["floors_cleared"] = 3
 				emit_signal("run_ended", get_run_summary())
 		"treasure":
-			result["treasure"] = enter_treasure()
+			result["treasure"] = _last_treasure_result if not _last_treasure_result.is_empty() else enter_treasure()
+			_last_treasure_result = {}
 		_:
 			pass
 
