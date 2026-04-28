@@ -732,8 +732,8 @@ func _get_enemy_configs_for_tier(tier: String) -> Array:
 		"unique":
 			return _normalize_enemy_array(content_data.get_unique_enemies())
 		_:
-			var pool := content_data.get_normal_enemies()
-			var count := rng.randi_range(2, 4)
+			var pool = content_data.get_normal_enemies()
+			var count = rng.randi_range(2, 4)
 			return _random_pick_enemies(pool, count)
 
 

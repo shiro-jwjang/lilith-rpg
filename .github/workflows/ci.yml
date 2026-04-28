@@ -1,25 +1,42 @@
-name: Deploy to GitHub Pages
+name: CI
 
 on:
   push:
-    branches: [develop]
-  workflow_dispatch:
-
-permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: true
+    branches: [develop, main]
+  pull_request:
+    branches: [develop, main]
 
 jobs:
-  build:
+  check:
     runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Godot
+        run: |
+          wget -q https://github.com/godotengine/godot/releases/download/4.6.1-stable/Godot_v4.6.1-stable_linux.x86_64.zip
+          unzip -q Godot_v4.6.1-stable_linux.x86_64.zip
+          mv Godot_v4.6.1-stable_linux.x86_64 /usr/local/bin/godot
+          chmod +x /usr/local/bin/godot
+
+      - name: Run CI gate
+        run: bash scripts/ci/check.sh
+
+  deploy:
+    needs: check
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: "pages"
+      cancel-in-progress: true
     steps:
       - name: Checkout
         uses: actions/checkout@v4

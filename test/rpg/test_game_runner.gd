@@ -353,7 +353,11 @@ func test_battle_enemy_auto_action() -> void:
 		{"unit": ally, "action_allowed": true, "dot_damage": 0, "battle_result": null},
 	]
 	var result: Dictionary = runner.next_turn()
-	assert_true(bool(result.get("unit", null).is_ally), "runner should continue until an ally turn")
+	# next_turn은 한 턴씩 반환하므로 첫 번째는 적 턴
+	assert_false(bool(result.get("unit", null).is_ally), "first result should be enemy turn")
+	# 두 번째 호출이 아군 턴
+	result = runner.next_turn()
+	assert_true(bool(result.get("unit", null).is_ally), "second result should be ally turn")
 
 
 func test_player_attack_enemy() -> void:
