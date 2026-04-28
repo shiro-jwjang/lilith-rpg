@@ -19,12 +19,12 @@ func generate_nodes() -> Array:
 	match floor_number:
 		1:
 			_add_node("combat", {"tier": "normal"})
-			_add_node("event", {"event_id": "evt_a"})
+			_add_node("event", {"event_id": "ruined_altar"})
 			_add_node("campfire")
 		2:
 			_add_node("combat", {"tier": "normal"})
 			_add_node("combat", {"tier": "elite"})
-			_add_node("event", {"event_id": "evt_b"})
+			_add_node("event", {"event_id": "ruin_merchant"})
 			_add_node("shop")
 		3:
 			_add_node("treasure")

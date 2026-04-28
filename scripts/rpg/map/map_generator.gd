@@ -2,7 +2,7 @@ extends RefCounted
 
 const FLOOR_SCRIPT = preload("res://scripts/rpg/map/floor.gd")
 
-const EVENT_CATALOG := ["evt_a", "evt_b", "evt_c", "evt_d"]
+const EVENT_CATALOG := ["ruined_altar", "ruin_merchant", "sealed_ward", "moonlight_rift"]
 
 var _config: Dictionary = {}
 
