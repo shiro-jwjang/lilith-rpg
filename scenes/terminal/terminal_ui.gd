@@ -1,8 +1,23 @@
 extends Control
 
+const BuildVersion = preload("res://scripts/rpg/version.gd")
+const UI_FONT = preload("res://assets/fonts/NotoSansKR.tres")
+const NODE_DISPLAY_NAMES := {
+	"combat": "⚔ 일반 전투",
+	"elite": "⚔ 정예 전투",
+	"boss": "💀 보스",
+	"unique": "💀 고유 적",
+	"event": "✦ 이벤트",
+	"shop": "🏪 상점",
+	"campfire": "🔥 모닥불",
+	"treasure": "💰 보물",
+}
+
 var text_log: RichTextLabel = null
 var choice_container: VBoxContainer = null
 var status_label: RichTextLabel = null
+var copy_log_button: Button = null
+var version_label: Label = null
 
 var runner = null
 var _current_state: String = "idle"
@@ -25,7 +40,7 @@ func _setup_ui() -> void:
 	anchor_right = 1.0
 	anchor_bottom = 1.0
 
-	var font: FontFile = load("res://assets/fonts/NotoSansKR.tres")
+	var font: FontFile = UI_FONT
 	var font_size := 18
 
 	status_label = RichTextLabel.new()
@@ -48,6 +63,21 @@ func _setup_ui() -> void:
 	text_log.add_theme_font_size_override("normal_font_size", font_size)
 	add_child(text_log)
 
+	copy_log_button = Button.new()
+	copy_log_button.text = "로그 복사"
+	copy_log_button.anchor_left = 1.0
+	copy_log_button.anchor_top = 0.10
+	copy_log_button.anchor_right = 1.0
+	copy_log_button.anchor_bottom = 0.10
+	copy_log_button.offset_left = -116.0
+	copy_log_button.offset_top = 8.0
+	copy_log_button.offset_right = -16.0
+	copy_log_button.offset_bottom = 40.0
+	copy_log_button.add_theme_font_override("font", font)
+	copy_log_button.add_theme_font_size_override("font_size", 14)
+	copy_log_button.pressed.connect(_on_copy_log_pressed)
+	add_child(copy_log_button)
+
 	var scroll := ScrollContainer.new()
 	scroll.anchor_top = 0.78
 	scroll.anchor_right = 1.0
@@ -58,6 +88,24 @@ func _setup_ui() -> void:
 	choice_container.anchor_right = 1.0
 	choice_container.anchor_bottom = 1.0
 	scroll.add_child(choice_container)
+
+	version_label = Label.new()
+	version_label.anchor_left = 1.0
+	version_label.anchor_top = 1.0
+	version_label.anchor_right = 1.0
+	version_label.anchor_bottom = 1.0
+	version_label.offset_left = -160.0
+	version_label.offset_top = -26.0
+	version_label.offset_right = -12.0
+	version_label.offset_bottom = -8.0
+	version_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	version_label.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
+	version_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	version_label.text = "v%s" % BuildVersion.VERSION
+	version_label.add_theme_font_override("font", font)
+	version_label.add_theme_font_size_override("font_size", 12)
+	version_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 0.8))
+	add_child(version_label)
 
 
 func _connect_runner() -> void:
@@ -149,7 +197,9 @@ func _on_input_requested(choices: Array) -> void:
 		var turn_unit = runner._current_turn
 		var turn_name := ""
 		if turn_unit != null:
-			turn_name = String(turn_unit.get("name", "")) if turn_unit.get("name", "") != "" else "아군"
+			turn_name = (
+				String(turn_unit.get("name", "")) if turn_unit.get("name", "") != "" else "아군"
+			)
 		append_text("")
 		if turn_name != "":
 			append_text("[color=yellow]▶ %s의 턴[/color]" % turn_name)
@@ -267,7 +317,11 @@ func _auto_advance_combat() -> void:
 		if unit == null:
 			return
 
-		var unit_name: String = String(unit.get("name", "")) if unit.get("name", "") != "" else ("아군%d" % int(unit.get("internal_id", 0)))
+		var unit_name: String = (
+			String(unit.get("name", ""))
+			if unit.get("name", "") != ""
+			else ("아군%d" % int(unit.get("internal_id", 0)))
+		)
 		var is_ally := bool(unit.get("is_ally", false))
 
 		if auto_action != null:
@@ -277,7 +331,9 @@ func _auto_advance_combat() -> void:
 			if is_ally:
 				append_text("  [color=cyan]%s[/color]이(가) 적에게 %d 데미지!" % [unit_name, damage])
 			else:
-				append_text("  [color=red]%s[/color]이(가) %s에게 %d 데미지!" % [unit_name, target_name, damage])
+				append_text(
+					"  [color=red]%s[/color]이(가) %s에게 %d 데미지!" % [unit_name, target_name, damage]
+				)
 			continue
 
 		if bool(turn_result.get("action_allowed", false)) and is_ally:
@@ -338,7 +394,11 @@ func _process_follow_up(turn_result: Dictionary) -> void:
 		if unit == null:
 			return
 
-		var unit_name: String = String(unit.get("name", "")) if unit.get("name", "") != "" else ("아군%d" % int(unit.get("internal_id", 0)))
+		var unit_name: String = (
+			String(unit.get("name", ""))
+			if unit.get("name", "") != ""
+			else ("아군%d" % int(unit.get("internal_id", 0)))
+		)
 		var is_ally := bool(unit.get("is_ally", false))
 
 		if auto_action != null:
@@ -348,7 +408,9 @@ func _process_follow_up(turn_result: Dictionary) -> void:
 			if is_ally:
 				append_text("  [color=cyan]%s[/color]이(가) 적에게 %d 데미지!" % [unit_name, damage])
 			else:
-				append_text("  [color=red]%s[/color]이(가) %s에게 %d 데미지!" % [unit_name, target_name, damage])
+				append_text(
+					"  [color=red]%s[/color]이(가) %s에게 %d 데미지!" % [unit_name, target_name, damage]
+				)
 			turn_result = runner.next_turn()
 			continue
 
@@ -408,7 +470,9 @@ func _on_shop_buy(item_index: int) -> void:
 		append_text("[color=green]구매 완료![/color]")
 		_show_shop(runner.enter_shop())
 	else:
-		append_text("[color=red]%s[/color]" % String(result.get("error", result.get("reason", "구매 실패"))))
+		append_text(
+			"[color=red]%s[/color]" % String(result.get("error", result.get("reason", "구매 실패")))
+		)
 
 
 func _on_shop_leave() -> void:
@@ -426,7 +490,12 @@ func _show_campfire() -> void:
 	if party_status.size() > 0:
 		var leader: Dictionary = party_status[0]
 		var leader_name: String = String(leader.get("name", "리나"))
-		append_text("%s의 상태: HP %d/%d" % [leader_name, int(leader.get("current_hp", 0)), int(leader.get("max_hp", 0))])
+		append_text(
+			(
+				"%s의 상태: HP %d/%d"
+				% [leader_name, int(leader.get("current_hp", 0)), int(leader.get("max_hp", 0))]
+			)
+		)
 	_add_choice("1. 휴식 (HP 회복)", "_on_campfire_rest", [])
 	_add_choice("2. 투자 (ATK +1, 25G)", "_on_campfire_invest", ["atk"])
 	_add_choice("3. 투자 (DEF +1, 25G)", "_on_campfire_invest", ["def"])
@@ -444,7 +513,12 @@ func _on_campfire_invest(stat_name: String) -> void:
 	var result: Dictionary = runner.campfire_invest(stat_name)
 	if bool(result.get("success", false)):
 		var stat_display := {"atk": "공격력", "def": "방어력"}
-		append_text("[color=green]%s이(가) 1 증가했다![/color]" % String(stat_display.get(stat_name, stat_name.to_upper())))
+		append_text(
+			(
+				"[color=green]%s이(가) 1 증가했다![/color]"
+				% String(stat_display.get(stat_name, stat_name.to_upper()))
+			)
+		)
 	else:
 		append_text("[color=red]%s[/color]" % String(result.get("error", "골드 부족!")))
 	_show_campfire()
@@ -465,6 +539,13 @@ func _on_restart() -> void:
 func append_text(text: String) -> void:
 	if text_log != null:
 		text_log.append_text(text + "\n")
+
+
+func _on_copy_log_pressed() -> void:
+	if text_log == null:
+		return
+	DisplayServer.clipboard_set(text_log.get_parsed_text())
+	append_text("[color=gray]로그를 클립보드에 복사했다.[/color]")
 
 
 func _show_party_narrative(party_status: Array) -> void:
@@ -507,7 +588,7 @@ func _add_choice(text: String, method: String, args: Array) -> void:
 		return
 	var button := Button.new()
 	button.text = text
-	var font: FontFile = load("res://assets/fonts/NotoSansKR.tres")
+	var font: FontFile = UI_FONT
 	button.add_theme_font_override("font", font)
 	button.add_theme_font_size_override("font_size", 16)
 	button.pressed.connect(_make_choice_callback(method, args))
@@ -515,30 +596,11 @@ func _add_choice(text: String, method: String, args: Array) -> void:
 
 
 func _make_choice_callback(method: String, args: Array) -> Callable:
-	return func() -> void:
-		callv(method, args)
+	return func() -> void: callv(method, args)
 
 
 func _node_display_name(node_type: String) -> String:
-	match node_type:
-		"combat":
-			return "⚔ 일반 전투"
-		"elite":
-			return "⚔ 정예 전투"
-		"boss":
-			return "💀 보스"
-		"unique":
-			return "💀 고유 적"
-		"event":
-			return "✦ 이벤트"
-		"shop":
-			return "🏪 상점"
-		"campfire":
-			return "🔥 모닥불"
-		"treasure":
-			return "💰 보물"
-		_:
-			return node_type
+	return String(NODE_DISPLAY_NAMES.get(node_type, node_type))
 
 
 func _floor_intro_text(floor_num: int) -> String:
