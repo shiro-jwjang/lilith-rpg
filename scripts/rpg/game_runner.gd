@@ -731,7 +731,21 @@ func _get_enemy_configs_for_tier(tier: String) -> Array:
 		"unique":
 			return _normalize_enemy_array(content_data.get_unique_enemies())
 		_:
-			return _normalize_enemy_array(content_data.get_normal_enemies())
+			var pool := content_data.get_normal_enemies()
+			var count := rng.randi_range(2, 4)
+			return _random_pick_enemies(pool, count)
+
+
+func _random_pick_enemies(pool: Array, count: int) -> Array:
+	if pool.is_empty():
+		return []
+	var shuffled := pool.duplicate(true)
+	shuffled.shuffle()
+	var picked_count := mini(count, shuffled.size())
+	var result: Array = []
+	for i in range(picked_count):
+		result.append(_normalize_enemy_config(shuffled[i]))
+	return result
 
 
 func _normalize_enemy_array(source: Array) -> Array:
