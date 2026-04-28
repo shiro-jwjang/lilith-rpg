@@ -1,5 +1,6 @@
 extends RefCounted
 
+var name: String = ""
 var current_hp: int = 0
 var max_hp: int = 0
 var current_mp: int = 0
@@ -14,6 +15,7 @@ var status_effects: Dictionary = {}
 
 
 func _init(config: Dictionary = {}) -> void:
+	name = String(config.get("name", ""))
 	max_hp = int(config.get("max_hp", 0))
 	current_hp = int(config.get("current_hp", max_hp))
 	max_mp = int(config.get("max_mp", 0))

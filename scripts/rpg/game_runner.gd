@@ -363,9 +363,13 @@ func complete_combat() -> Dictionary:
 
 
 func enter_event(event_id: String) -> Dictionary:
+	var event = event_manager.get_event(event_id)
+	var event_title := ""
+	if event != null:
+		event_title = String(event.title)
 	var choices: Array = event_manager.get_visible_choices(event_id, _event_context())
 	emit_signal("player_input_requested", choices)
-	return {"event_id": event_id, "choices": choices}
+	return {"event_id": event_id, "title": event_title, "choices": choices}
 
 
 func resolve_event_choice(choice_id: String) -> Dictionary:
@@ -588,6 +592,7 @@ func _build_party_battle_configs() -> Array:
 	for index in range(party.size()):
 		var member: Dictionary = party[index]
 		configs.append({
+			"name": String(member.get("name", "")),
 			"max_hp": int(member.get("max_hp", 0)),
 			"current_hp": int(member.get("current_hp", 0)),
 			"max_mp": int(member.get("max_mp", 0)),
@@ -818,6 +823,7 @@ func _units_to_status_array(units: Array) -> Array:
 	for unit in units:
 		result.append({
 			"internal_id": int(unit.internal_id),
+			"name": String(unit.name),
 			"is_ally": bool(unit.is_ally),
 			"current_hp": int(unit.current_hp),
 			"max_hp": int(unit.max_hp),
