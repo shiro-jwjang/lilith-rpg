@@ -1,0 +1,1222 @@
+[
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-001",
+    "name": "일반 전투 골드 보상 범위 검증",
+    "input": {
+      "battle_type": "normal",
+      "run_count": 1000
+    },
+    "expected": {
+      "gold_min": 20,
+      "gold_max": 35,
+      "distribution": "uniform"
+    },
+    "assertion": "ALL gold >= 20 AND ALL gold <= 35",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-002",
+    "name": "일반 전투 공용 보상 1회 필수 - 일반 장비 40%",
+    "input": {
+      "battle_type": "normal",
+      "run_count": 10000
+    },
+    "expected": {
+      "reward_count": 1,
+      "normal_equipment_rate": 0.4
+    },
+    "assertion": "reward_items.length == 1 AND normal_equipment_rate ∈ [0.37, 0.43]",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-003",
+    "name": "일반 전투 공용 보상 1회 필수 - 물약 60%",
+    "input": {
+      "battle_type": "normal",
+      "run_count": 10000
+    },
+    "expected": {
+      "reward_count": 1,
+      "potion_rate": 0.6
+    },
+    "assertion": "reward_items.length == 1 AND potion_rate ∈ [0.57, 0.63]",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-004",
+    "name": "엘리트 전투 골드 보상 범위 검증",
+    "input": {
+      "battle_type": "elite",
+      "run_count": 1000
+    },
+    "expected": {
+      "gold_min": 60,
+      "gold_max": 80,
+      "distribution": "uniform"
+    },
+    "assertion": "ALL gold >= 60 AND ALL gold <= 80",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-005",
+    "name": "엘리트 전투 상위 보상 확률 검증",
+    "input": {
+      "battle_type": "elite",
+      "run_count": 10000
+    },
+    "expected": {
+      "reward_count": 1,
+      "high_equipment_rate": 0.5,
+      "relic_candidate_rate": 0.3,
+      "rare_equipment_rate": 0.2
+    },
+    "assertion": "reward_items.length == 1 AND SUM(rates) == 1.0 AND high_equipment_rate ∈ [0.47, 0.53] AND relic_candidate_rate ∈ [0.27, 0.33] AND rare_equipment_rate ∈ [0.17, 0.23]",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-006",
+    "name": "유니크 전투 골드 보상 범위 검증",
+    "input": {
+      "battle_type": "unique",
+      "run_count": 1000
+    },
+    "expected": {
+      "gold_min": 80,
+      "gold_max": 100,
+      "distribution": "uniform"
+    },
+    "assertion": "ALL gold >= 80 AND ALL gold <= 100",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-007",
+    "name": "유니크 전투 상위 보상 확률 검증",
+    "input": {
+      "battle_type": "unique",
+      "run_count": 10000
+    },
+    "expected": {
+      "reward_count": 1,
+      "high_equipment_rate": 0.3,
+      "relic_candidate_rate": 0.5,
+      "rare_equipment_rate": 0.2
+    },
+    "assertion": "reward_items.length == 1 AND SUM(rates) == 1.0 AND high_equipment_rate ∈ [0.27, 0.33] AND relic_candidate_rate ∈ [0.47, 0.53] AND rare_equipment_rate ∈ [0.17, 0.23]",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-008",
+    "name": "보스 전투 골드 120 고정 검증",
+    "input": {
+      "battle_type": "boss",
+      "run_count": 100
+    },
+    "expected": {
+      "gold": 120,
+      "fixed": true
+    },
+    "assertion": "ALL gold == 120",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-009",
+    "name": "보스 전투 유물 1개 확정 + 해금 체크 1회",
+    "input": {
+      "battle_type": "boss",
+      "run_count": 100
+    },
+    "expected": {
+      "relic_count": 1,
+      "unlock_check_count": 1
+    },
+    "assertion": "ALL rewards.contains(relic) AND ALL relic_count == 1 AND unlock_check_called == true",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-010",
+    "name": "보물 노드 유물 1개 확정",
+    "input": {
+      "node_type": "treasure",
+      "run_count": 100
+    },
+    "expected": {
+      "relic_count": 1
+    },
+    "assertion": "ALL rewards.length >= 1 AND ALL rewards.any(r => r.type == 'relic')",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-011",
+    "name": "이벤트 노드 선택지 1개당 보상 1회",
+    "input": {
+      "node_type": "event",
+      "choices_made": 2
+    },
+    "expected": {
+      "reward_grants": 2
+    },
+    "assertion": "total_rewards_granted == choices_made AND total_rewards_granted == 2",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-012",
+    "name": "이벤트 노드 중복 보상 불허",
+    "input": {
+      "node_type": "event",
+      "choice": "A",
+      "already_rewarded_for": [
+        "A"
+      ]
+    },
+    "expected": {
+      "additional_reward": false
+    },
+    "assertion": "rewards_for_choice_A == 1 (no duplicate grant)",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-013",
+    "name": "보상 결과가 비어 있으면 버그 처리",
+    "input": {
+      "battle_type": "normal",
+      "mock_empty_reward": true
+    },
+    "expected": {
+      "error_type": "bug",
+      "error_handled": true
+    },
+    "assertion": "result.rewards.length > 0 OR error == 'BUG_EMPTY_REWARD'",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-014",
+    "name": "인벤토리 꽉찬 상태에서 보상 처리",
+    "input": {
+      "battle_type": "normal",
+      "inventory_full": true,
+      "inventory_size": 20,
+      "inventory_used": 20
+    },
+    "expected": {
+      "reward_overflow_handled": true,
+      "no_data_loss": true
+    },
+    "assertion": "inventory_full == true → rewards queued OR rewards discarded with notification, no crash",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-015",
+    "name": "일반 전투 골드 최소값 경계 테스트",
+    "input": {
+      "battle_type": "normal",
+      "forced_min": true
+    },
+    "expected": {
+      "gold": 20
+    },
+    "assertion": "gold == 20",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-016",
+    "name": "일반 전투 골드 최대값 경계 테스트",
+    "input": {
+      "battle_type": "normal",
+      "forced_max": true
+    },
+    "expected": {
+      "gold": 35
+    },
+    "assertion": "gold == 35",
+    "implemented": false
+  },
+  {
+    "feature": "보상 시스템",
+    "test_id": "reward-017",
+    "name": "보스 전투 해금 체크 정확히 1회 호출",
+    "input": {
+      "battle_type": "boss"
+    },
+    "expected": {
+      "unlock_check_invocations": 1
+    },
+    "assertion": "unlock_check_call_count == 1",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-001",
+    "name": "모든 이벤트 최소 2개 선택지 보유",
+    "input": {
+      "event_pool": [
+        "ruined_altar",
+        "ruin_merchant",
+        "sealed_ward",
+        "moonlight_rift"
+      ]
+    },
+    "expected": {
+      "min_choices": 2
+    },
+    "assertion": "ALL events.choices.length >= 2",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-002",
+    "name": "이벤트 종료 후 반드시 다음 노드로 이동",
+    "input": {
+      "event": "ruined_altar",
+      "choice": "기도",
+      "complete": true
+    },
+    "expected": {
+      "next_node_assigned": true
+    },
+    "assertion": "current_node != null AND event_resolved == true AND next_node != null",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-003",
+    "name": "이벤트 실패 시 패널티 부여 (HP/MP/골드 감소 OR 상태이상 OR 전투)",
+    "input": {
+      "event": "ruined_altar",
+      "choice": "파괴",
+      "outcome": "combat"
+    },
+    "expected": {
+      "penalty_applied": true
+    },
+    "assertion": "hp_decreased == true OR mp_decreased == true OR gold_decreased == true OR status_effect_added == true OR combat_triggered == true",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-004",
+    "name": "이벤트 전투 - 일반 전투 규칙 적용 + 이벤트 전용 적 풀",
+    "input": {
+      "event": "ruined_altar",
+      "choice": "파괴",
+      "outcome": "combat"
+    },
+    "expected": {
+      "battle_rules": "normal",
+      "enemy_pool": "event_specific"
+    },
+    "assertion": "battle.gold ∈ [20, 35] AND enemy ∈ event_enemy_pool",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-005",
+    "name": "무너진 제단 - 기도 선택 (HP-15%, MP-5% → 유물 선택 100%)",
+    "input": {
+      "event": "ruined_altar",
+      "choice": "기도",
+      "player": {
+        "hp_max": 100,
+        "hp": 100,
+        "mp_max": 50,
+        "mp": 50
+      }
+    },
+    "expected": {
+      "hp_after": 85,
+      "mp_after": 47.5,
+      "relic_selection": true,
+      "relic_rate": 1.0
+    },
+    "assertion": "hp == hp_max * 0.85 AND mp == mp_max * 0.95 AND relic_offered == true",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-006",
+    "name": "무너진 제단 - 봉헌 선택 (MP-10% → 보상 100%)",
+    "input": {
+      "event": "ruined_altar",
+      "choice": "봉헌",
+      "player": {
+        "mp_max": 50,
+        "mp": 50
+      }
+    },
+    "expected": {
+      "mp_after": 45,
+      "reward_granted": true,
+      "reward_rate": 1.0
+    },
+    "assertion": "mp == mp_max * 0.90 AND reward != null",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-007",
+    "name": "무너진 제단 - 파괴 선택 (무비용 → 유물 50% / 전투 50%)",
+    "input": {
+      "event": "ruined_altar",
+      "choice": "파괴",
+      "player": {
+        "hp": 100,
+        "mp": 50,
+        "gold": 80
+      },
+      "run_count": 10000
+    },
+    "expected": {
+      "cost": 0,
+      "relic_rate": 0.5,
+      "combat_rate": 0.5
+    },
+    "assertion": "hp == 100 AND mp == 50 AND gold == 80 AND relic_rate ∈ [0.47, 0.53] AND combat_rate ∈ [0.47, 0.53]",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-008",
+    "name": "무너진 제단 - 숨겨진 선택지 '기원' 조건 불충족 (방문 < 3회)",
+    "input": {
+      "event": "ruined_altar",
+      "visit_count": 2,
+      "player": {
+        "hp_max": 100,
+        "hp": 100,
+        "mp_max": 50,
+        "mp": 50
+      }
+    },
+    "expected": {
+      "hidden_choice_visible": false
+    },
+    "assertion": "choices.find(c => c.id == '기원') == undefined",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-009",
+    "name": "무너진 제단 - 숨겨진 선택지 '기원' 조건 충족 (방문 >= 3회)",
+    "input": {
+      "event": "ruined_altar",
+      "visit_count": 3,
+      "player": {
+        "hp_max": 100,
+        "hp": 100,
+        "mp_max": 50,
+        "mp": 50
+      }
+    },
+    "expected": {
+      "hidden_choice_visible": true
+    },
+    "assertion": "choices.find(c => c.id == '기원') != undefined",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-010",
+    "name": "무너진 제단 - 기원 선택 (HP-30%, MP-15% → 유물 1개 확정)",
+    "input": {
+      "event": "ruined_altar",
+      "choice": "기원",
+      "visit_count": 3,
+      "player": {
+        "hp_max": 100,
+        "hp": 100,
+        "mp_max": 50,
+        "mp": 50
+      }
+    },
+    "expected": {
+      "hp_after": 70,
+      "mp_after": 42.5,
+      "relic_count": 1,
+      "relic_guaranteed": true
+    },
+    "assertion": "hp == hp_max * 0.70 AND mp == mp_max * 0.85 AND relic_granted == true AND relic_count == 1",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-011",
+    "name": "폐허 상인 - 구매 선택 (골드 소비 → 장비/물약/강화재료)",
+    "input": {
+      "event": "ruin_merchant",
+      "choice": "구매",
+      "player": {
+        "gold": 50
+      }
+    },
+    "expected": {
+      "gold_decreased": true,
+      "reward_type_in": [
+        "equipment",
+        "potion",
+        "upgrade_material"
+      ]
+    },
+    "assertion": "gold < 50 AND reward.type ∈ ['equipment', 'potion', 'upgrade_material']",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-012",
+    "name": "폐허 상인 - 강탈 선택 (무비용 → 골드 보너스 60% / 전투 40%)",
+    "input": {
+      "event": "ruin_merchant",
+      "choice": "강탈",
+      "player": {
+        "hp": 100,
+        "mp": 50,
+        "gold": 30
+      },
+      "run_count": 10000
+    },
+    "expected": {
+      "cost": 0,
+      "gold_bonus_rate": 0.6,
+      "combat_rate": 0.4
+    },
+    "assertion": "gold_bonus_rate ∈ [0.57, 0.63] AND combat_rate ∈ [0.37, 0.43]",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-013",
+    "name": "폐허 상인 - 숨겨진 선택지 '특별 거래' 조건 불충족 (골드 < 100)",
+    "input": {
+      "event": "ruin_merchant",
+      "player": {
+        "gold": 99
+      }
+    },
+    "expected": {
+      "hidden_choice_visible": false
+    },
+    "assertion": "choices.find(c => c.id == '특별 거래') == undefined",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-014",
+    "name": "폐허 상인 - 숨겨진 선택지 '특별 거래' 조건 충족 (골드 >= 100)",
+    "input": {
+      "event": "ruin_merchant",
+      "player": {
+        "gold": 100
+      }
+    },
+    "expected": {
+      "hidden_choice_visible": true
+    },
+    "assertion": "choices.find(c => c.id == '특별 거래') != undefined",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-015",
+    "name": "폐허 상인 - 특별 거래 선택 (고급 장비 1개 구매)",
+    "input": {
+      "event": "ruin_merchant",
+      "choice": "특별 거래",
+      "player": {
+        "gold": 150
+      }
+    },
+    "expected": {
+      "gold_decreased": true,
+      "reward_type": "high_equipment",
+      "reward_count": 1
+    },
+    "assertion": "gold < 150 AND reward.type == 'high_equipment' AND reward_count == 1",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-016",
+    "name": "봉인된 병실 - 치료 선택 (HP 회복)",
+    "input": {
+      "event": "sealed_ward",
+      "choice": "치료",
+      "player": {
+        "hp_max": 100,
+        "hp": 40
+      }
+    },
+    "expected": {
+      "hp_increased": true,
+      "hp_after_gt_before": true
+    },
+    "assertion": "hp > 40 AND hp <= hp_max",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-017",
+    "name": "봉인된 병실 - 해방 선택 (디버프 해제 + 골드)",
+    "input": {
+      "event": "sealed_ward",
+      "choice": "해방",
+      "player": {
+        "gold": 50,
+        "status_effects": [
+          "poison",
+          "weakness"
+        ]
+      }
+    },
+    "expected": {
+      "debuffs_removed": true,
+      "gold_increased": true
+    },
+    "assertion": "status_effects.length < 2 AND gold > 50",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-018",
+    "name": "봉인된 병실 - 약탈 선택 (장비 50% / 전투 50%)",
+    "input": {
+      "event": "sealed_ward",
+      "choice": "약탈",
+      "player": {
+        "hp": 80,
+        "mp": 30,
+        "gold": 60
+      },
+      "run_count": 10000
+    },
+    "expected": {
+      "equipment_rate": 0.5,
+      "combat_rate": 0.5
+    },
+    "assertion": "equipment_rate ∈ [0.47, 0.53] AND combat_rate ∈ [0.47, 0.53]",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-019",
+    "name": "봉인된 병실 - 숨겨진 선택지 '봉인 해제' 조건 불충족 (승리 < 3회)",
+    "input": {
+      "event": "sealed_ward",
+      "battle_wins": 2
+    },
+    "expected": {
+      "hidden_choice_visible": false
+    },
+    "assertion": "choices.find(c => c.id == '봉인 해제') == undefined",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-020",
+    "name": "봉인된 병실 - 숨겨진 선택지 '봉인 해제' 조건 충족 (승리 >= 3회)",
+    "input": {
+      "event": "sealed_ward",
+      "battle_wins": 3
+    },
+    "expected": {
+      "hidden_choice_visible": true
+    },
+    "assertion": "choices.find(c => c.id == '봉인 해제') != undefined",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-021",
+    "name": "봉인된 병실 - 봉인 해제 선택 (유물 후보 획득)",
+    "input": {
+      "event": "sealed_ward",
+      "choice": "봉인 해제",
+      "battle_wins": 3,
+      "player": {
+        "hp": 80,
+        "mp": 30
+      }
+    },
+    "expected": {
+      "reward_type": "relic_candidate"
+    },
+    "assertion": "reward.type == 'relic_candidate'",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-022",
+    "name": "달빛 균열 - 탐사 선택 (유물 후보 65% / 전투 35%)",
+    "input": {
+      "event": "moonlight_rift",
+      "choice": "탐사",
+      "player": {
+        "hp": 80,
+        "mp": 40,
+        "gold": 50
+      },
+      "run_count": 10000
+    },
+    "expected": {
+      "relic_candidate_rate": 0.65,
+      "combat_rate": 0.35
+    },
+    "assertion": "relic_candidate_rate ∈ [0.62, 0.68] AND combat_rate ∈ [0.32, 0.38]",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-023",
+    "name": "달빛 균열 - 봉인 선택 (다음 전투 적 속도 -2)",
+    "input": {
+      "event": "moonlight_rift",
+      "choice": "봉인",
+      "player": {
+        "hp": 80,
+        "mp": 40
+      }
+    },
+    "expected": {
+      "next_combat_enemy_speed_debuff": -2
+    },
+    "assertion": "next_combat_modifier.enemy_speed == -2",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-024",
+    "name": "달빛 균열 - 수용 선택 (HP-10% → 장비 1개)",
+    "input": {
+      "event": "moonlight_rift",
+      "choice": "수용",
+      "player": {
+        "hp_max": 100,
+        "hp": 100,
+        "mp": 40,
+        "gold": 50
+      }
+    },
+    "expected": {
+      "hp_after": 90,
+      "equipment_count": 1
+    },
+    "assertion": "hp == hp_max * 0.90 AND reward.type == 'equipment' AND reward_count == 1",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-025",
+    "name": "달빛 균열 - 숨겨진 선택지 '균열 강화' 조건 불충족 (상태이상 < 2종)",
+    "input": {
+      "event": "moonlight_rift",
+      "player": {
+        "status_effects": [
+          "poison"
+        ]
+      }
+    },
+    "expected": {
+      "hidden_choice_visible": false
+    },
+    "assertion": "choices.find(c => c.id == '균열 강화') == undefined",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-026",
+    "name": "달빛 균열 - 숨겨진 선택지 '균열 강화' 조건 충족 (상태이상 >= 2종)",
+    "input": {
+      "event": "moonlight_rift",
+      "player": {
+        "status_effects": [
+          "poison",
+          "weakness"
+        ]
+      }
+    },
+    "expected": {
+      "hidden_choice_visible": true
+    },
+    "assertion": "choices.find(c => c.id == '균열 강화') != undefined",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-027",
+    "name": "달빛 균열 - 균열 강화 선택 (상태이상 모두 제거 + 유물 후보)",
+    "input": {
+      "event": "moonlight_rift",
+      "choice": "균열 강화",
+      "player": {
+        "status_effects": [
+          "poison",
+          "weakness",
+          "bleed"
+        ]
+      }
+    },
+    "expected": {
+      "all_status_removed": true,
+      "relic_candidate": true
+    },
+    "assertion": "status_effects.length == 0 AND reward.type == 'relic_candidate'",
+    "implemented": false
+  },
+  {
+    "feature": "이벤트 시스템",
+    "test_id": "event-028",
+    "name": "이벤트 진행 막힘 방지 - 모든 선택지가 유효한 결과를 반환",
+    "input": {
+      "event_pool": [
+        "ruined_altar",
+        "ruin_merchant",
+        "sealed_ward",
+        "moonlight_rift"
+      ]
+    },
+    "expected": {
+      "no_dead_end": true
+    },
+    "assertion": "ALL events.ALL choices → result.next_state != 'blocked'",
+    "implemented": false
+  },
+  {
+    "feature": "상점 시스템",
+    "test_id": "shop-001",
+    "name": "장비 풀 노출 개수 검증 (3~4개)",
+    "input": {
+      "visit_shop": true,
+      "run_count": 1000
+    },
+    "expected": {
+      "equipment_display_min": 3,
+      "equipment_display_max": 4
+    },
+    "assertion": "ALL equipment_list.length ∈ [3, 4]",
+    "implemented": false
+  },
+  {
+    "feature": "상점 시스템",
+    "test_id": "shop-002",
+    "name": "일반 장비 가격 범위 검증 (30~45)",
+    "input": {
+      "equipment_tier": "normal",
+      "run_count": 1000
+    },
+    "expected": {
+      "price_min": 30,
+      "price_max": 45
+    },
+    "assertion": "ALL equipment.tier == 'normal' → equipment.price ∈ [30, 45]",
+    "implemented": false
+  },
+  {
+    "feature": "상점 시스템",
+    "test_id": "shop-003",
+    "name": "고급 장비 가격 범위 검증 (50~70)",
+    "input": {
+      "equipment_tier": "high",
+      "run_count": 1000
+    },
+    "expected": {
+      "price_min": 50,
+      "price_max": 70
+    },
+    "assertion": "ALL equipment.tier == 'high' → equipment.price ∈ [50, 70]",
+    "implemented": false
+  },
+  {
+    "feature": "상점 시스템",
+    "test_id": "shop-004",
+    "name": "유물 풀 노출 개수 검증 (정확히 2개)",
+    "input": {
+      "visit_shop": true,
+      "run_count": 1000
+    },
+    "expected": {
+      "relic_display_count": 2
+    },
+    "assertion": "ALL relic_list.length == 2",
+    "implemented": false
+  },
+  {
+    "feature": "상점 시스템",
+    "test_id": "shop-005",
+    "name": "유물 가격 범위 검증 (60~90)",
+    "input": {
+      "run_count": 1000
+    },
+    "expected": {
+      "relic_price_min": 60,
+      "relic_price_max": 90
+    },
+    "assertion": "ALL relic.price ∈ [60, 90]",
+    "implemented": false
+  },
+  {
+    "feature": "상점 시스템",
+    "test_id": "shop-006",
+    "name": "유물 런당 1회 노출 제한",
+    "input": {
+      "visit_shop_count": 3,
+      "run_id": "single_run"
+    },
+    "expected": {
+      "relic_pool_shown": 1,
+      "subsequent_visits_no_relic_pool": true
+    },
+    "assertion": "relic_pool_visible_count == 1 AND visit_2.relic_pool_visible == false AND visit_3.relic_pool_visible == false",
+    "implemented": false
+  },
+  {
+    "feature": "상점 시스템",
+    "test_id": "shop-007",
+    "name": "유물 구매 후 미리보기 제공",
+    "input": {
+      "purchase_relic": true,
+      "gold": 100
+    },
+    "expected": {
+      "preview_shown": true
+    },
+    "assertion": "relic_purchased == true AND relic_preview_displayed == true",
+    "implemented": false
+  },
+  {
+    "feature": "상점 시스템",
+    "test_id": "shop-008",
+    "name": "물약 종류 노출 검증",
+    "input": {
+      "visit_shop": true
+    },
+    "expected": {
+      "potions": [
+        "작은 체력 물약",
+        "중형 체력 물약",
+        "작은 마나 물약",
+        "중형 마나 물약",
+        "해독제",
+        "전투 자극제"
+      ]
+    },
+    "assertion": "ALL expected_potions ∈ shop_potion_list",
+    "implemented": false
+  },
+  {
+    "feature": "상점 시스템",
+    "test_id": "shop-009",
+    "name": "물약 무제한 구매 가능",
+    "input": {
+      "potion": "작은 체력 물약",
+      "purchase_count": 99,
+      "gold": 9999
+    },
+    "expected": {
+      "purchased": 99,
+      "no_limit_reached": true
+    },
+    "assertion": "purchase_count == 99 AND no_purchase_limit_error",
+    "implemented": false
+  },
+  {
+    "feature": "상점 시스템",
+    "test_id": "shop-010",
+    "name": "장비 풀 리필 - 상점 방문마다 새로운 풀 생성",
+    "input": {
+      "visit_shop_twice": true,
+      "first_visit_equipment": [
+        "A",
+        "B",
+        "C"
+      ]
+    },
+    "expected": {
+      "equipment_refreshed": true
+    },
+    "assertion": "visit_2.equipment_list != visit_1.equipment_list (pooled refresh, may overlap but re-rolled)",
+    "implemented": false
+  },
+  {
+    "feature": "상점 시스템",
+    "test_id": "shop-011",
+    "name": "골드 부족 시 구매 불가 처리",
+    "input": {
+      "item_price": 50,
+      "player_gold": 30,
+      "purchase_attempt": true
+    },
+    "expected": {
+      "purchase_failed": true,
+      "error_type": "insufficient_gold"
+    },
+    "assertion": "purchased == false AND gold == 30",
+    "implemented": false
+  },
+  {
+    "feature": "상점 시스템",
+    "test_id": "shop-012",
+    "name": "골드 부족 경계값 - 정확히 가격과 동일한 골드로 구매 성공",
+    "input": {
+      "item_price": 45,
+      "player_gold": 45,
+      "purchase_attempt": true
+    },
+    "expected": {
+      "purchase_success": true,
+      "gold_after": 0
+    },
+    "assertion": "purchased == true AND gold == 0",
+    "implemented": false
+  },
+  {
+    "feature": "상점 시스템",
+    "test_id": "shop-013",
+    "name": "장비 풀 최소 노출 경계값 (3개)",
+    "input": {
+      "visit_shop": true,
+      "forced_min": true
+    },
+    "expected": {
+      "equipment_count": 3
+    },
+    "assertion": "equipment_list.length == 3",
+    "implemented": false
+  },
+  {
+    "feature": "상점 시스템",
+    "test_id": "shop-014",
+    "name": "장비 풀 최대 노출 경계값 (4개)",
+    "input": {
+      "visit_shop": true,
+      "forced_max": true
+    },
+    "expected": {
+      "equipment_count": 4
+    },
+    "assertion": "equipment_list.length == 4",
+    "implemented": false
+  },
+  {
+    "feature": "모닥불 시스템",
+    "test_id": "campfire-001",
+    "name": "휴식 - 최대 HP의 35% 회복",
+    "input": {
+      "action": "rest",
+      "player": {
+        "hp_max": 100,
+        "hp": 20
+      }
+    },
+    "expected": {
+      "hp_after": 55,
+      "heal_amount": 35
+    },
+    "assertion": "hp_after == hp_max * 0.35 + 20 == 55 OR hp_after == min(hp + hp_max * 0.35, hp_max)",
+    "implemented": false
+  },
+  {
+    "feature": "모닥불 시스템",
+    "test_id": "campfire-002",
+    "name": "휴식 - HP가 이미 최대인 경우 오버힐 방지",
+    "input": {
+      "action": "rest",
+      "player": {
+        "hp_max": 100,
+        "hp": 100
+      }
+    },
+    "expected": {
+      "hp_after": 100,
+      "no_overheal": true
+    },
+    "assertion": "hp_after == 100",
+    "implemented": false
+  },
+  {
+    "feature": "모닥불 시스템",
+    "test_id": "campfire-003",
+    "name": "휴식 - 회복 후 최대 HP 초과 방지",
+    "input": {
+      "action": "rest",
+      "player": {
+        "hp_max": 100,
+        "hp": 80
+      }
+    },
+    "expected": {
+      "hp_after": 100,
+      "capped_at_max": true
+    },
+    "assertion": "hp_after == min(80 + 35, 100) == 100",
+    "implemented": false
+  },
+  {
+    "feature": "모닥불 시스템",
+    "test_id": "campfire-004",
+    "name": "휴식 - 회복량 정확히 최대 HP의 35%",
+    "input": {
+      "action": "rest",
+      "player": {
+        "hp_max": 200,
+        "hp": 0
+      }
+    },
+    "expected": {
+      "hp_after": 70,
+      "heal_amount": 70
+    },
+    "assertion": "hp_after == 200 * 0.35 == 70",
+    "implemented": false
+  },
+  {
+    "feature": "모닥불 시스템",
+    "test_id": "campfire-005",
+    "name": "능력치 투자 - 1개 스탯 +1, 비용 25골드",
+    "input": {
+      "action": "invest_stat",
+      "stat": "strength",
+      "player": {
+        "gold": 50,
+        "strength": 5
+      }
+    },
+    "expected": {
+      "stat_after": 6,
+      "gold_after": 25,
+      "cost": 25
+    },
+    "assertion": "strength == 6 AND gold == 25",
+    "implemented": false
+  },
+  {
+    "feature": "모닥불 시스템",
+    "test_id": "campfire-006",
+    "name": "능력치 투자 - 골드 부족 시 (25골드 미만) 투자 불가",
+    "input": {
+      "action": "invest_stat",
+      "stat": "strength",
+      "player": {
+        "gold": 24,
+        "strength": 5
+      }
+    },
+    "expected": {
+      "investment_failed": true,
+      "stat_unchanged": 5,
+      "gold_unchanged": 24
+    },
+    "assertion": "strength == 5 AND gold == 24",
+    "implemented": false
+  },
+  {
+    "feature": "모닥불 시스템",
+    "test_id": "campfire-007",
+    "name": "능력치 투자 - 골드 경계값 정확히 25골드로 투자 성공",
+    "input": {
+      "action": "invest_stat",
+      "stat": "vitality",
+      "player": {
+        "gold": 25,
+        "vitality": 3
+      }
+    },
+    "expected": {
+      "stat_after": 4,
+      "gold_after": 0
+    },
+    "assertion": "vitality == 4 AND gold == 0",
+    "implemented": false
+  },
+  {
+    "feature": "모닥불 시스템",
+    "test_id": "campfire-008",
+    "name": "능력치 투자 - 다양한 스탯에 각각 +1 가능",
+    "input": {
+      "action": "invest_stat",
+      "stats_to_test": [
+        "strength",
+        "vitality",
+        "intelligence",
+        "agility",
+        "luck"
+      ],
+      "player": {
+        "gold": 999
+      }
+    },
+    "expected": {
+      "each_stat_increases_by_1": true
+    },
+    "assertion": "ALL stats → stat_after == stat_before + 1 AND gold_decreased_by == 25 per investment",
+    "implemented": false
+  },
+  {
+    "feature": "모닥불 시스템",
+    "test_id": "campfire-009",
+    "name": "모닥불 노드 1막 최소 1회 등장 보장",
+    "input": {
+      "act": 1,
+      "map_generation_runs": 1000
+    },
+    "expected": {
+      "min_campfire_per_act": 1
+    },
+    "assertion": "ALL maps.campfire_count >= 1",
+    "implemented": false
+  },
+  {
+    "feature": "모닥불 시스템",
+    "test_id": "campfire-010",
+    "name": "모닥불 노드 1막 최대 2회 등장 제한",
+    "input": {
+      "act": 1,
+      "map_generation_runs": 1000
+    },
+    "expected": {
+      "max_campfire_per_act": 2
+    },
+    "assertion": "ALL maps.campfire_count <= 2",
+    "implemented": false
+  },
+  {
+    "feature": "모닥불 시스템",
+    "test_id": "campfire-011",
+    "name": "모닥불 노드 등장 경계값 - 정확히 1회",
+    "input": {
+      "act": 1,
+      "forced_count": 1
+    },
+    "expected": {
+      "campfire_count": 1
+    },
+    "assertion": "map.campfire_nodes.length == 1",
+    "implemented": false
+  },
+  {
+    "feature": "모닥불 시스템",
+    "test_id": "campfire-012",
+    "name": "모닥불 노드 등장 경계값 - 정확히 2회",
+    "input": {
+      "act": 1,
+      "forced_count": 2
+    },
+    "expected": {
+      "campfire_count": 2
+    },
+    "assertion": "map.campfire_nodes.length == 2",
+    "implemented": false
+  }
+]

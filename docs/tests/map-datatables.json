@@ -1,0 +1,1823 @@
+[
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-001",
+    "name": "1층 노드 수 최소값 (3개)",
+    "input": {
+      "act": 1,
+      "floor": 1
+    },
+    "expected": {
+      "node_count": 3
+    },
+    "assertion": "floor.nodes.length >= 3",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-002",
+    "name": "1층 노드 수 최대값 (4개)",
+    "input": {
+      "act": 1,
+      "floor": 1
+    },
+    "expected": {
+      "node_count": 4
+    },
+    "assertion": "floor.nodes.length <= 4",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-003",
+    "name": "2층 노드 수 최소값 (3개)",
+    "input": {
+      "act": 1,
+      "floor": 2
+    },
+    "expected": {
+      "node_count": 3
+    },
+    "assertion": "floor.nodes.length >= 3",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-004",
+    "name": "2층 노드 수 최대값 (4개)",
+    "input": {
+      "act": 1,
+      "floor": 2
+    },
+    "expected": {
+      "node_count": 4
+    },
+    "assertion": "floor.nodes.length <= 4",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-005",
+    "name": "3층 노드 수 최소값 (2개)",
+    "input": {
+      "act": 1,
+      "floor": 3
+    },
+    "expected": {
+      "node_count": 2
+    },
+    "assertion": "floor.nodes.length >= 2",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-006",
+    "name": "3층 노드 수 최대값 (3개)",
+    "input": {
+      "act": 1,
+      "floor": 3
+    },
+    "expected": {
+      "node_count": 3
+    },
+    "assertion": "floor.nodes.length <= 3",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-007",
+    "name": "1층 노드 분포 - 일반전투 1~2개",
+    "input": {
+      "act": 1,
+      "floor": 1,
+      "count_type": "combat"
+    },
+    "expected": {
+      "combat_count_min": 1,
+      "combat_count_max": 2
+    },
+    "assertion": "floor.nodes.filter(n => n.type === 'combat').length >= 1 && floor.nodes.filter(n => n.type === 'combat').length <= 2",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-008",
+    "name": "1층 노드 분포 - 이벤트 정확히 1개",
+    "input": {
+      "act": 1,
+      "floor": 1,
+      "count_type": "event"
+    },
+    "expected": {
+      "event_count": 1
+    },
+    "assertion": "floor.nodes.filter(n => n.type === 'event').length === 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-009",
+    "name": "1층 노드 분포 - 모닥불 0~1개",
+    "input": {
+      "act": 1,
+      "floor": 1,
+      "count_type": "campfire"
+    },
+    "expected": {
+      "campfire_count_min": 0,
+      "campfire_count_max": 1
+    },
+    "assertion": "floor.nodes.filter(n => n.type === 'campfire').length >= 0 && floor.nodes.filter(n => n.type === 'campfire').length <= 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-010",
+    "name": "1층 보스 노드 없음",
+    "input": {
+      "act": 1,
+      "floor": 1,
+      "forbidden_type": "boss"
+    },
+    "expected": {
+      "boss_count": 0
+    },
+    "assertion": "floor.nodes.filter(n => n.type === 'boss').length === 0",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-011",
+    "name": "2층 노드 분포 - 일반전투 정확히 1개",
+    "input": {
+      "act": 1,
+      "floor": 2,
+      "count_type": "combat"
+    },
+    "expected": {
+      "combat_count": 1
+    },
+    "assertion": "floor.nodes.filter(n => n.type === 'combat').length === 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-012",
+    "name": "2층 노드 분포 - 엘리트 정확히 1개",
+    "input": {
+      "act": 1,
+      "floor": 2,
+      "count_type": "elite"
+    },
+    "expected": {
+      "elite_count": 1
+    },
+    "assertion": "floor.nodes.filter(n => n.type === 'combat' && n.tier === 'elite').length === 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-013",
+    "name": "2층 노드 분포 - 이벤트 정확히 1개",
+    "input": {
+      "act": 1,
+      "floor": 2,
+      "count_type": "event"
+    },
+    "expected": {
+      "event_count": 1
+    },
+    "assertion": "floor.nodes.filter(n => n.type === 'event').length === 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-014",
+    "name": "2층 노드 분포 - 보물 0~1개",
+    "input": {
+      "act": 1,
+      "floor": 2,
+      "count_type": "treasure"
+    },
+    "expected": {
+      "treasure_count_min": 0,
+      "treasure_count_max": 1
+    },
+    "assertion": "floor.nodes.filter(n => n.type === 'treasure').length >= 0 && floor.nodes.filter(n => n.type === 'treasure').length <= 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-015",
+    "name": "2층 노드 분포 - 상점 0~1개",
+    "input": {
+      "act": 1,
+      "floor": 2,
+      "count_type": "shop"
+    },
+    "expected": {
+      "shop_count_min": 0,
+      "shop_count_max": 1
+    },
+    "assertion": "floor.nodes.filter(n => n.type === 'shop').length >= 0 && floor.nodes.filter(n => n.type === 'shop').length <= 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-016",
+    "name": "2층 보스 노드 없음",
+    "input": {
+      "act": 1,
+      "floor": 2,
+      "forbidden_type": "boss"
+    },
+    "expected": {
+      "boss_count": 0
+    },
+    "assertion": "floor.nodes.filter(n => n.type === 'boss').length === 0",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-017",
+    "name": "3층 보스 노드 필수 (정확히 1개)",
+    "input": {
+      "act": 1,
+      "floor": 3,
+      "required_type": "boss"
+    },
+    "expected": {
+      "boss_count": 1
+    },
+    "assertion": "floor.nodes.filter(n => n.type === 'boss').length === 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-018",
+    "name": "3층 노드 분포 - 유니크 0~1개",
+    "input": {
+      "act": 1,
+      "floor": 3,
+      "count_type": "unique"
+    },
+    "expected": {
+      "unique_count_min": 0,
+      "unique_count_max": 1
+    },
+    "assertion": "floor.nodes.filter(n => n.type === 'unique').length >= 0 && floor.nodes.filter(n => n.type === 'unique').length <= 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-019",
+    "name": "3층 노드 분포 - 일반전투 0~1개",
+    "input": {
+      "act": 1,
+      "floor": 3,
+      "count_type": "combat"
+    },
+    "expected": {
+      "combat_count_min": 0,
+      "combat_count_max": 1
+    },
+    "assertion": "floor.nodes.filter(n => n.type === 'combat' && n.tier === 'normal').length >= 0 && floor.nodes.filter(n => n.type === 'combat' && n.tier === 'normal').length <= 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-020",
+    "name": "3층 노드 분포 - 이벤트 0~1개",
+    "input": {
+      "act": 1,
+      "floor": 3,
+      "count_type": "event"
+    },
+    "expected": {
+      "event_count_min": 0,
+      "event_count_max": 1
+    },
+    "assertion": "floor.nodes.filter(n => n.type === 'event').length >= 0 && floor.nodes.filter(n => n.type === 'event').length <= 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-021",
+    "name": "전역 규칙 - 보물 노드 최소 1회 (1막 전체)",
+    "input": {
+      "act": 1,
+      "global_check": "treasure"
+    },
+    "expected": {
+      "treasure_total_min": 1
+    },
+    "assertion": "act.allFloors.flatMap(f => f.nodes).filter(n => n.type === 'treasure').length >= 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-022",
+    "name": "전역 규칙 - 보물 노드 최대 2회 (1막 전체)",
+    "input": {
+      "act": 1,
+      "global_check": "treasure"
+    },
+    "expected": {
+      "treasure_total_max": 2
+    },
+    "assertion": "act.allFloors.flatMap(f => f.nodes).filter(n => n.type === 'treasure').length <= 2",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-023",
+    "name": "전역 규칙 - 상점 노드 최소 1회 (1막 전체)",
+    "input": {
+      "act": 1,
+      "global_check": "shop"
+    },
+    "expected": {
+      "shop_total_min": 1
+    },
+    "assertion": "act.allFloors.flatMap(f => f.nodes).filter(n => n.type === 'shop').length >= 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-024",
+    "name": "전역 규칙 - 모닥불 최소 1회 (1막 전체)",
+    "input": {
+      "act": 1,
+      "global_check": "campfire"
+    },
+    "expected": {
+      "campfire_total_min": 1
+    },
+    "assertion": "act.allFloors.flatMap(f => f.nodes).filter(n => n.type === 'campfire').length >= 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-025",
+    "name": "전역 규칙 - 모닥불 최대 2회 (1막 전체)",
+    "input": {
+      "act": 1,
+      "global_check": "campfire"
+    },
+    "expected": {
+      "campfire_total_max": 2
+    },
+    "assertion": "act.allFloors.flatMap(f => f.nodes).filter(n => n.type === 'campfire').length <= 2",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-026",
+    "name": "전역 규칙 - 유니크 정확히 1회 (1막 전체)",
+    "input": {
+      "act": 1,
+      "global_check": "unique"
+    },
+    "expected": {
+      "unique_total": 1
+    },
+    "assertion": "act.allFloors.flatMap(f => f.nodes).filter(n => n.type === 'unique').length === 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-027",
+    "name": "전역 규칙 - 유니크 노드는 2층 또는 3층에만 배치",
+    "input": {
+      "act": 1,
+      "global_check": "unique_floor"
+    },
+    "expected": {
+      "unique_allowed_floors": [
+        2,
+        3
+      ]
+    },
+    "assertion": "let uniqueNodes = act.allFloors.filter(f => f.nodes.some(n => n.type === 'unique')); uniqueNodes.every(f => f.floorNumber === 2 || f.floorNumber === 3)",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-028",
+    "name": "전역 규칙 - 유니크는 보스 직전 노드 위치에 배치",
+    "input": {
+      "act": 1,
+      "global_check": "unique_position"
+    },
+    "expected": {
+      "unique_is_pre_boss": true
+    },
+    "assertion": "let uniqueFloor = act.allFloors.find(f => f.nodes.some(n => n.type === 'unique')); let floorNodes = uniqueFloor.nodes; let uniqueIdx = floorNodes.findIndex(n => n.type === 'unique'); let bossIdx = floorNodes.findIndex(n => n.type === 'boss'); uniqueIdx < bossIdx && (bossIdx === -1 || uniqueIdx === bossIdx - 1 || floorNodes.filter((n,i) => i > uniqueIdx && i < bossIdx && n.type !== 'unique').length === 0)",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-029",
+    "name": "이벤트 4종 - 중복 없이 모두 등장",
+    "input": {
+      "act": 1,
+      "global_check": "event_diversity"
+    },
+    "expected": {
+      "distinct_event_count": 4
+    },
+    "assertion": "let allEvents = act.allFloors.flatMap(f => f.nodes).filter(n => n.type === 'event').map(n => n.event_id); new Set(allEvents).size === 4",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-030",
+    "name": "이벤트 - 같은 이벤트 연속 층 출현 금지",
+    "input": {
+      "act": 1,
+      "global_check": "event_no_consecutive_floor"
+    },
+    "expected": {
+      "no_consecutive_same_event": true
+    },
+    "assertion": "let eventIdsByFloor = act.allFloors.map(f => f.nodes.filter(n => n.type === 'event').map(n => n.event_id)); for (let i = 1; i < eventIdsByFloor.length; i++) { let prev = new Set(eventIdsByFloor[i-1]); let curr = eventIdsByFloor[i]; if (curr.some(e => prev.has(e))) return false; } return true",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-031",
+    "name": "노드 타입 enum 유효성 검증 - 허용된 타입만 존재",
+    "input": {
+      "valid_types": [
+        "combat",
+        "event",
+        "treasure",
+        "shop",
+        "campfire",
+        "unique",
+        "boss"
+      ]
+    },
+    "expected": {
+      "all_valid": true
+    },
+    "assertion": "let allowed = new Set(['combat','event','treasure','shop','campfire','unique','boss']); act.allFloors.flatMap(f => f.nodes).every(n => allowed.has(n.type))",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-032",
+    "name": "노드 타입 enum - 허용되지 않은 타입 입력 시 거부",
+    "input": {
+      "node_type": "invalid_type"
+    },
+    "expected": {
+      "error": true,
+      "message": "Invalid node type"
+    },
+    "assertion": "throws(() => createNode({ type: 'invalid_type' }), /invalid.*node.*type/i)",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-033",
+    "name": "플레이어 매 층 1개 노드만 선택 가능",
+    "input": {
+      "floor": 1,
+      "select_count": 1
+    },
+    "expected": {
+      "selected_count": 1
+    },
+    "assertion": "player.selectedNodesForFloor(1).length === 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-034",
+    "name": "플레이어 2개 노드 선택 시도 시 거부",
+    "input": {
+      "floor": 1,
+      "select_count": 2
+    },
+    "expected": {
+      "error": true,
+      "message": "Only one node per floor"
+    },
+    "assertion": "throws(() => player.selectNodesForFloor(1, [nodeA, nodeB]), /one.*node.*floor/i)",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-035",
+    "name": "층 순서 강제 - 1층→2층→3층 진행",
+    "input": {
+      "current_floor": 1,
+      "attempt_floor": 2
+    },
+    "expected": {
+      "allowed": true
+    },
+    "assertion": "map.canAdvanceToFloor(2) === true && player.currentFloor === 1",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-036",
+    "name": "되돌아가기 불가 - 2층에서 1층 이동 시도 거부",
+    "input": {
+      "current_floor": 2,
+      "attempt_floor": 1
+    },
+    "expected": {
+      "allowed": false,
+      "error": "Cannot go back"
+    },
+    "assertion": "map.canGoBack(2, 1) === false",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-037",
+    "name": "되돌아가기 불가 - 3층에서 2층 이동 시도 거부",
+    "input": {
+      "current_floor": 3,
+      "attempt_floor": 2
+    },
+    "expected": {
+      "allowed": false,
+      "error": "Cannot go back"
+    },
+    "assertion": "map.canGoBack(3, 2) === false",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-038",
+    "name": "되돌아가기 불가 - 3층에서 1층 직접 이동 시도 거부",
+    "input": {
+      "current_floor": 3,
+      "attempt_floor": 1
+    },
+    "expected": {
+      "allowed": false,
+      "error": "Cannot go back"
+    },
+    "assertion": "map.canGoBack(3, 1) === false",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-039",
+    "name": "파이프라인 - 노드 선택 후 노드 진입 상태 전이",
+    "input": {
+      "action": "select_node",
+      "node_id": "floor1_node1"
+    },
+    "expected": {
+      "state": "node_entered",
+      "current_node": "floor1_node1"
+    },
+    "assertion": "pipeline.state === 'node_entered' && pipeline.currentNode === 'floor1_node1'",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-040",
+    "name": "파이프라인 - 노드 완료 후 결과 반영",
+    "input": {
+      "action": "complete_node",
+      "node_type": "combat",
+      "result": "victory"
+    },
+    "expected": {
+      "state": "result_reflected",
+      "rewards_applied": true
+    },
+    "assertion": "pipeline.state === 'result_reflected' && player.rewards.length > 0",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-041",
+    "name": "파이프라인 - 결과 반영 후 다음 층 노드 표시",
+    "input": {
+      "action": "advance",
+      "from_floor": 1,
+      "to_floor": 2
+    },
+    "expected": {
+      "state": "next_floor_ready",
+      "displayed_floor": 2
+    },
+    "assertion": "pipeline.state === 'next_floor_ready' && pipeline.displayedFloor === 2",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-042",
+    "name": "1막 전체 층 수 = 3층",
+    "input": {
+      "act": 1
+    },
+    "expected": {
+      "total_floors": 3
+    },
+    "assertion": "act.floors.length === 3",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-043",
+    "name": "경계값 - 1층 최소 구성 (3노드: 전투1+이벤트1+모닥불0)에서 보물/상점 없어도 전역 보장",
+    "input": {
+      "act": 1,
+      "floor_config": {
+        "1": [
+          "combat",
+          "event",
+          "combat"
+        ],
+        "2": [
+          "combat",
+          "elite",
+          "event",
+          "shop"
+        ],
+        "3": [
+          "unique",
+          "boss"
+        ]
+      }
+    },
+    "expected": {
+      "treasure_total": 0,
+      "error": "treasure_min_violation"
+    },
+    "assertion": "throws(() => validateMap(config), /treasure.*minimum/i)",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-044",
+    "name": "예외 - 보물 3회 배치 시 전역 최대 위반",
+    "input": {
+      "act": 1,
+      "floor_config": {
+        "1": [
+          "combat",
+          "event",
+          "treasure"
+        ],
+        "2": [
+          "combat",
+          "elite",
+          "event",
+          "treasure"
+        ],
+        "3": [
+          "treasure",
+          "unique",
+          "boss"
+        ]
+      }
+    },
+    "expected": {
+      "treasure_total": 3,
+      "error": "treasure_max_violation"
+    },
+    "assertion": "throws(() => validateMap(config), /treasure.*maximum/i)",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-045",
+    "name": "예외 - 유니크 2회 배치 시 전역 위반",
+    "input": {
+      "act": 1,
+      "floor_config": {
+        "2": [
+          "combat",
+          "elite",
+          "event",
+          "unique"
+        ],
+        "3": [
+          "unique",
+          "boss"
+        ]
+      }
+    },
+    "expected": {
+      "unique_total": 2,
+      "error": "unique_max_violation"
+    },
+    "assertion": "throws(() => validateMap(config), /unique.*exactly.*1/i)",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-046",
+    "name": "예외 - 유니크가 1층에 배치 시 위치 위반",
+    "input": {
+      "act": 1,
+      "floor_config": {
+        "1": [
+          "combat",
+          "event",
+          "unique"
+        ],
+        "2": [
+          "combat",
+          "elite",
+          "event"
+        ],
+        "3": [
+          "boss"
+        ]
+      }
+    },
+    "expected": {
+      "error": "unique_floor_violation"
+    },
+    "assertion": "throws(() => validateMap(config), /unique.*floor.*(2|3)/i)",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-047",
+    "name": "예외 - 이벤트 중복 발생 시 위반",
+    "input": {
+      "act": 1,
+      "event_ids": [
+        "evt_a",
+        "evt_a",
+        "evt_b",
+        "evt_c"
+      ]
+    },
+    "expected": {
+      "distinct_count": 3,
+      "error": "event_duplicate_violation"
+    },
+    "assertion": "throws(() => validateMap(config), /event.*duplicate/i)",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-048",
+    "name": "예외 - 같은 이벤트 연속 층 출현 시 위반",
+    "input": {
+      "act": 1,
+      "events_by_floor": {
+        "1": [
+          "evt_a"
+        ],
+        "2": [
+          "evt_a",
+          "evt_b"
+        ],
+        "3": [
+          "evt_c"
+        ]
+      }
+    },
+    "expected": {
+      "error": "event_consecutive_floor_violation"
+    },
+    "assertion": "throws(() => validateMap(config), /event.*consecutive.*floor/i)",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-049",
+    "name": "예외 - 3층에 보스 누락 시 위반",
+    "input": {
+      "act": 1,
+      "floor_config": {
+        "3": [
+          "unique",
+          "event",
+          "combat"
+        ]
+      }
+    },
+    "expected": {
+      "boss_count": 0,
+      "error": "boss_missing"
+    },
+    "assertion": "throws(() => validateMap(config), /boss.*required/i)",
+    "implemented": false
+  },
+  {
+    "feature": "맵/노드 시스템",
+    "test_id": "map-050",
+    "name": "정상 - 완전한 유효 맵 구성 통과",
+    "input": {
+      "act": 1,
+      "floor_config": {
+        "1": [
+          "combat",
+          "event",
+          "campfire",
+          "combat"
+        ],
+        "2": [
+          "combat",
+          "elite",
+          "event",
+          "treasure"
+        ],
+        "3": [
+          "unique",
+          "boss"
+        ]
+      }
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "validateMap(config) === true && no errors thrown",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-001",
+    "name": "CharacterTable - 필수 필드 존재",
+    "input": {
+      "table": "CharacterTable",
+      "record": {
+        "character_id": "char_001",
+        "name": "도키",
+        "role": "front",
+        "max_hp": 100,
+        "max_mp": 30,
+        "attack": 15,
+        "defense": 10,
+        "speed": 12,
+        "crit_rate": 0.05,
+        "effect_accuracy": 0.9,
+        "effect_resistance": 0.1,
+        "skill_ids": [
+          "sk_001"
+        ]
+      }
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "requiredFields.every(f => record.hasOwnProperty(f))",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-002",
+    "name": "CharacterTable - 필수 필드 누락 시 에러",
+    "input": {
+      "table": "CharacterTable",
+      "record": {
+        "character_id": "char_001",
+        "name": "도키"
+      },
+      "missing": [
+        "role",
+        "max_hp",
+        "max_mp",
+        "attack",
+        "defense",
+        "speed",
+        "crit_rate",
+        "effect_accuracy",
+        "effect_resistance",
+        "skill_ids"
+      ]
+    },
+    "expected": {
+      "error": true,
+      "missing_fields": [
+        "role",
+        "max_hp",
+        "max_mp",
+        "attack",
+        "defense",
+        "speed",
+        "crit_rate",
+        "effect_accuracy",
+        "effect_resistance",
+        "skill_ids"
+      ]
+    },
+    "assertion": "throws(() => validateCharacter(record), /missing.*required.*field/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-003",
+    "name": "CharacterTable - role enum 유효값 (front)",
+    "input": {
+      "table": "CharacterTable",
+      "field": "role",
+      "value": "front"
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "['front','guardian','support'].includes(record.role)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-004",
+    "name": "CharacterTable - role enum 유효값 (guardian)",
+    "input": {
+      "table": "CharacterTable",
+      "field": "role",
+      "value": "guardian"
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "['front','guardian','support'].includes(record.role)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-005",
+    "name": "CharacterTable - role enum 유효값 (support)",
+    "input": {
+      "table": "CharacterTable",
+      "field": "role",
+      "value": "support"
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "['front','guardian','support'].includes(record.role)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-006",
+    "name": "CharacterTable - role enum 유효하지 않은 값 거부",
+    "input": {
+      "table": "CharacterTable",
+      "field": "role",
+      "value": "healer"
+    },
+    "expected": {
+      "error": true,
+      "message": "Invalid role"
+    },
+    "assertion": "throws(() => validateCharacter({role:'healer'}), /invalid.*role/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-007",
+    "name": "CharacterTable - max_hp 경계값 0 거부",
+    "input": {
+      "table": "CharacterTable",
+      "field": "max_hp",
+      "value": 0
+    },
+    "expected": {
+      "error": true,
+      "message": "max_hp must be positive"
+    },
+    "assertion": "record.max_hp > 0",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-008",
+    "name": "CharacterTable - max_hp 정상값 허용",
+    "input": {
+      "table": "CharacterTable",
+      "field": "max_hp",
+      "value": 100
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "typeof record.max_hp === 'number' && record.max_hp > 0",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-009",
+    "name": "CharacterTable - crit_rate 범위 0~1 내 정상값",
+    "input": {
+      "table": "CharacterTable",
+      "field": "crit_rate",
+      "value": 0.15
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "record.crit_rate >= 0 && record.crit_rate <= 1",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-010",
+    "name": "CharacterTable - crit_rate 경계 초과 (1.5) 거부",
+    "input": {
+      "table": "CharacterTable",
+      "field": "crit_rate",
+      "value": 1.5
+    },
+    "expected": {
+      "error": true,
+      "message": "crit_rate out of range"
+    },
+    "assertion": "throws(() => validateCharacter({crit_rate: 1.5}), /crit_rate.*range/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-011",
+    "name": "SkillTable - 필수 필드 존재",
+    "input": {
+      "table": "SkillTable",
+      "record": {
+        "skill_id": "sk_001",
+        "name": "기본 공격",
+        "mp_cost": 5,
+        "target_type": "single_enemy",
+        "damage_ratio": 1.0,
+        "base_status_chance": 0.0,
+        "status_effect_ids": [],
+        "status_duration": 0,
+        "tags": [
+          "attack"
+        ]
+      }
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "requiredFields.every(f => record.hasOwnProperty(f))",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-012",
+    "name": "SkillTable - target_type enum 전체 유효값",
+    "input": {
+      "table": "SkillTable",
+      "field": "target_type",
+      "values": [
+        "single_enemy",
+        "all_enemies",
+        "single_ally",
+        "all_allies",
+        "self"
+      ]
+    },
+    "expected": {
+      "all_valid": true
+    },
+    "assertion": "values.every(v => ['single_enemy','all_enemies','single_ally','all_allies','self'].includes(v))",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-013",
+    "name": "SkillTable - target_type 유효하지 않은 값 거부",
+    "input": {
+      "table": "SkillTable",
+      "field": "target_type",
+      "value": "random"
+    },
+    "expected": {
+      "error": true,
+      "message": "Invalid target_type"
+    },
+    "assertion": "throws(() => validateSkill({target_type:'random'}), /invalid.*target_type/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-014",
+    "name": "SkillTable - mp_cost 음수 거부",
+    "input": {
+      "table": "SkillTable",
+      "field": "mp_cost",
+      "value": -1
+    },
+    "expected": {
+      "error": true,
+      "message": "mp_cost must be non-negative"
+    },
+    "assertion": "record.mp_cost >= 0",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-015",
+    "name": "SkillTable - mp_cost 0 정상 (기본공격 등)",
+    "input": {
+      "table": "SkillTable",
+      "field": "mp_cost",
+      "value": 0
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "record.mp_cost === 0",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-016",
+    "name": "SkillTable - damage_ratio 음수 거부",
+    "input": {
+      "table": "SkillTable",
+      "field": "damage_ratio",
+      "value": -0.5
+    },
+    "expected": {
+      "error": true,
+      "message": "damage_ratio must be non-negative"
+    },
+    "assertion": "record.damage_ratio >= 0",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-017",
+    "name": "SkillTable - base_status_chance 범위 0~1",
+    "input": {
+      "table": "SkillTable",
+      "field": "base_status_chance",
+      "value": 0.3
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "record.base_status_chance >= 0 && record.base_status_chance <= 1",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-018",
+    "name": "SkillTable - base_status_chance 범위 초과 거부",
+    "input": {
+      "table": "SkillTable",
+      "field": "base_status_chance",
+      "value": 1.2
+    },
+    "expected": {
+      "error": true,
+      "message": "base_status_chance out of range"
+    },
+    "assertion": "throws(() => validateSkill({base_status_chance: 1.2}), /base_status_chance.*range/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-019",
+    "name": "EnemyTable - 필수 필드 존재",
+    "input": {
+      "table": "EnemyTable",
+      "record": {
+        "enemy_id": "enm_001",
+        "name": "버섯몹",
+        "tier": "normal",
+        "max_hp": 50,
+        "attack": 8,
+        "defense": 5,
+        "speed": 7,
+        "reward_group_id": "rwg_001",
+        "ai_pattern_id": "ai_001",
+        "loot_table_id": "loot_001",
+        "status_immunities": []
+      }
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "requiredFields.every(f => record.hasOwnProperty(f))",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-020",
+    "name": "EnemyTable - tier enum 전체 유효값",
+    "input": {
+      "table": "EnemyTable",
+      "field": "tier",
+      "values": [
+        "normal",
+        "elite",
+        "unique",
+        "boss"
+      ]
+    },
+    "expected": {
+      "all_valid": true
+    },
+    "assertion": "values.every(v => ['normal','elite','unique','boss'].includes(v))",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-021",
+    "name": "EnemyTable - tier 유효하지 않은 값 거부",
+    "input": {
+      "table": "EnemyTable",
+      "field": "tier",
+      "value": "legendary"
+    },
+    "expected": {
+      "error": true,
+      "message": "Invalid tier"
+    },
+    "assertion": "throws(() => validateEnemy({tier:'legendary'}), /invalid.*tier/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-022",
+    "name": "EnemyTable - max_hp 정상값 (보스)",
+    "input": {
+      "table": "EnemyTable",
+      "field": "max_hp",
+      "value": 500,
+      "tier": "boss"
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "record.max_hp > 0 && record.tier === 'boss'",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-023",
+    "name": "RelicTable - 필수 필드 존재",
+    "input": {
+      "table": "RelicTable",
+      "record": {
+        "relic_id": "rel_001",
+        "name": "달콤한 쿠키",
+        "rarity": "rare",
+        "trigger_condition": "turn_start",
+        "effect_text": "HP 10 회복",
+        "stack_rule": "no_stack",
+        "penalty_text": null
+      }
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "requiredFields.every(f => record.hasOwnProperty(f))",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-024",
+    "name": "RelicTable - 필수 필드 누락 시 에러",
+    "input": {
+      "table": "RelicTable",
+      "record": {
+        "relic_id": "rel_001"
+      },
+      "missing": [
+        "name",
+        "rarity",
+        "trigger_condition",
+        "effect_text",
+        "stack_rule"
+      ]
+    },
+    "expected": {
+      "error": true
+    },
+    "assertion": "throws(() => validateRelic(record), /missing.*required.*field/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-025",
+    "name": "EquipmentTable - 필수 필드 존재",
+    "input": {
+      "table": "EquipmentTable",
+      "record": {
+        "equipment_id": "eqp_001",
+        "name": "기본 빵방망이",
+        "slot": "weapon",
+        "rarity": "common",
+        "primary_bonus": {
+          "stat": "attack",
+          "value": 5
+        },
+        "secondary_bonus": null,
+        "upgrade_level_max": 5,
+        "special_effect_text": null
+      }
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "requiredFields.every(f => record.hasOwnProperty(f))",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-026",
+    "name": "EquipmentTable - slot enum 전체 유효값",
+    "input": {
+      "table": "EquipmentTable",
+      "field": "slot",
+      "values": [
+        "weapon",
+        "armor",
+        "accessory",
+        "trinket"
+      ]
+    },
+    "expected": {
+      "all_valid": true
+    },
+    "assertion": "values.every(v => ['weapon','armor','accessory','trinket'].includes(v))",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-027",
+    "name": "EquipmentTable - slot 유효하지 않은 값 거부",
+    "input": {
+      "table": "EquipmentTable",
+      "field": "slot",
+      "value": "helmet"
+    },
+    "expected": {
+      "error": true,
+      "message": "Invalid slot"
+    },
+    "assertion": "throws(() => validateEquipment({slot:'helmet'}), /invalid.*slot/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-028",
+    "name": "EquipmentTable - upgrade_level_max 최소값 1",
+    "input": {
+      "table": "EquipmentTable",
+      "field": "upgrade_level_max",
+      "value": 1
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "record.upgrade_level_max >= 1",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-029",
+    "name": "EquipmentTable - upgrade_level_max 0 거부",
+    "input": {
+      "table": "EquipmentTable",
+      "field": "upgrade_level_max",
+      "value": 0
+    },
+    "expected": {
+      "error": true,
+      "message": "upgrade_level_max must be at least 1"
+    },
+    "assertion": "throws(() => validateEquipment({upgrade_level_max: 0}), /upgrade_level_max.*at least/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-030",
+    "name": "NodeTable - 필수 필드 존재",
+    "input": {
+      "table": "NodeTable",
+      "record": {
+        "node_id": "nd_001",
+        "node_type": "combat",
+        "unlock_condition": null,
+        "outgoing_edges": [
+          "nd_002"
+        ],
+        "encounter_pool_id": "enc_001",
+        "reward_group_id": "rwg_001"
+      }
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "requiredFields.every(f => record.hasOwnProperty(f))",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-031",
+    "name": "NodeTable - node_type enum 전체 유효값",
+    "input": {
+      "table": "NodeTable",
+      "field": "node_type",
+      "values": [
+        "combat",
+        "event",
+        "treasure",
+        "shop",
+        "campfire",
+        "unique",
+        "boss"
+      ]
+    },
+    "expected": {
+      "all_valid": true
+    },
+    "assertion": "values.every(v => ['combat','event','treasure','shop','campfire','unique','boss'].includes(v))",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-032",
+    "name": "NodeTable - node_type 유효하지 않은 값 거부",
+    "input": {
+      "table": "NodeTable",
+      "field": "node_type",
+      "value": "minigame"
+    },
+    "expected": {
+      "error": true,
+      "message": "Invalid node_type"
+    },
+    "assertion": "throws(() => validateNode({node_type:'minigame'}), /invalid.*node_type/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-033",
+    "name": "NodeTable - outgoing_edges 빈 배열 허용 (말단 노드)",
+    "input": {
+      "table": "NodeTable",
+      "field": "outgoing_edges",
+      "value": []
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "Array.isArray(record.outgoing_edges) && record.outgoing_edges.length === 0",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-034",
+    "name": "EventTable - 필수 필드 존재",
+    "input": {
+      "table": "EventTable",
+      "record": {
+        "event_id": "evt_001",
+        "title": "의문의 빵",
+        "options": [
+          {
+            "text": "먹어본다",
+            "outcome": "success"
+          },
+          {
+            "text": "무시한다",
+            "outcome": "neutral"
+          }
+        ],
+        "required_conditions": [],
+        "success_outcomes": [
+          {
+            "type": "heal",
+            "value": 20
+          }
+        ],
+        "failure_outcomes": [
+          {
+            "type": "damage",
+            "value": 15
+          }
+        ],
+        "followup_node_type": "campfire"
+      }
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "requiredFields.every(f => record.hasOwnProperty(f))",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-035",
+    "name": "EventTable - options 최소 2개 정상",
+    "input": {
+      "table": "EventTable",
+      "field": "options",
+      "value": [
+        {
+          "text": "A",
+          "outcome": "success"
+        },
+        {
+          "text": "B",
+          "outcome": "neutral"
+        }
+      ]
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "record.options.length >= 2",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-036",
+    "name": "EventTable - options 1개만 있으면 거부",
+    "input": {
+      "table": "EventTable",
+      "field": "options",
+      "value": [
+        {
+          "text": "A",
+          "outcome": "success"
+        }
+      ]
+    },
+    "expected": {
+      "error": true,
+      "message": "options must have at least 2 entries"
+    },
+    "assertion": "throws(() => validateEvent({options: [{text:'A'}]}), /options.*at least.*2/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-037",
+    "name": "EventTable - options 빈 배열 거부",
+    "input": {
+      "table": "EventTable",
+      "field": "options",
+      "value": []
+    },
+    "expected": {
+      "error": true,
+      "message": "options must have at least 2 entries"
+    },
+    "assertion": "throws(() => validateEvent({options: []}), /options.*at least.*2/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-038",
+    "name": "EventTable - options 3개 이상 허용",
+    "input": {
+      "table": "EventTable",
+      "field": "options",
+      "value": [
+        {
+          "text": "A"
+        },
+        {
+          "text": "B"
+        },
+        {
+          "text": "C"
+        }
+      ]
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "record.options.length >= 2",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-039",
+    "name": "EventTable - 필수 필드 누락 시 에러",
+    "input": {
+      "table": "EventTable",
+      "record": {
+        "event_id": "evt_001"
+      },
+      "missing": [
+        "title",
+        "options",
+        "required_conditions",
+        "success_outcomes",
+        "failure_outcomes",
+        "followup_node_type"
+      ]
+    },
+    "expected": {
+      "error": true
+    },
+    "assertion": "throws(() => validateEvent(record), /missing.*required.*field/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-040",
+    "name": "RewardTable - 필수 필드 존재",
+    "input": {
+      "table": "RewardTable",
+      "record": {
+        "reward_group_id": "rwg_001",
+        "guaranteed_rewards": [
+          {
+            "type": "gold",
+            "amount": 50
+          }
+        ],
+        "optional_rewards": [
+          {
+            "type": "equipment",
+            "pool_id": "eqp_pool_001"
+          }
+        ],
+        "selection_count": 1,
+        "rarity_floor": "common",
+        "pity_rule": {
+          "threshold": 5,
+          "guaranteed_rarity": "rare"
+        }
+      }
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "requiredFields.every(f => record.hasOwnProperty(f))",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-041",
+    "name": "RewardTable - 필수 필드 누락 시 에러",
+    "input": {
+      "table": "RewardTable",
+      "record": {
+        "reward_group_id": "rwg_001"
+      },
+      "missing": [
+        "guaranteed_rewards",
+        "optional_rewards",
+        "selection_count",
+        "rarity_floor",
+        "pity_rule"
+      ]
+    },
+    "expected": {
+      "error": true
+    },
+    "assertion": "throws(() => validateReward(record), /missing.*required.*field/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-042",
+    "name": "RewardTable - selection_count 최소값 0 (선택 없음)",
+    "input": {
+      "table": "RewardTable",
+      "field": "selection_count",
+      "value": 0
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "record.selection_count >= 0",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-043",
+    "name": "RewardTable - selection_count 음수 거부",
+    "input": {
+      "table": "RewardTable",
+      "field": "selection_count",
+      "value": -1
+    },
+    "expected": {
+      "error": true,
+      "message": "selection_count must be non-negative"
+    },
+    "assertion": "throws(() => validateReward({selection_count: -1}), /selection_count.*non-negative/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-044",
+    "name": "RewardTable - guaranteed_rewards 빈 배열 허용 (전체 옵셔널)",
+    "input": {
+      "table": "RewardTable",
+      "field": "guaranteed_rewards",
+      "value": []
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "Array.isArray(record.guaranteed_rewards)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-045",
+    "name": "RewardTable - pity_rule 필드 내부 구조 검증",
+    "input": {
+      "table": "RewardTable",
+      "field": "pity_rule",
+      "value": {
+        "threshold": 5,
+        "guaranteed_rarity": "rare"
+      }
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "record.pity_rule.hasOwnProperty('threshold') && record.pity_rule.hasOwnProperty('guaranteed_rarity') && record.pity_rule.threshold > 0",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-046",
+    "name": "CharacterTable - skill_ids 빈 배열 허용 (스킬 없는 캐릭터)",
+    "input": {
+      "table": "CharacterTable",
+      "field": "skill_ids",
+      "value": []
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "Array.isArray(record.skill_ids)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-047",
+    "name": "SkillTable - status_effect_ids 빈 배열 허용 (상태효과 없는 스킬)",
+    "input": {
+      "table": "SkillTable",
+      "field": "status_effect_ids",
+      "value": []
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "Array.isArray(record.status_effect_ids)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-048",
+    "name": "EnemyTable - status_immunities 빈 배열 허용 (면역 없는 적)",
+    "input": {
+      "table": "EnemyTable",
+      "field": "status_immunities",
+      "value": []
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "Array.isArray(record.status_immunities)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-049",
+    "name": "전체 테이블 - record ID 고유성 검증",
+    "input": {
+      "table": "CharacterTable",
+      "records": [
+        {
+          "character_id": "char_001"
+        },
+        {
+          "character_id": "char_001"
+        }
+      ]
+    },
+    "expected": {
+      "error": true,
+      "message": "Duplicate character_id"
+    },
+    "assertion": "throws(() => validateTable(records), /duplicate.*character_id/i)",
+    "implemented": false
+  },
+  {
+    "feature": "데이터 테이블",
+    "test_id": "datatable-050",
+    "name": "전체 테이블 - 빈 테이블 입력 허용 (빈 데이터셋)",
+    "input": {
+      "table": "CharacterTable",
+      "records": []
+    },
+    "expected": {
+      "valid": true
+    },
+    "assertion": "validateTable([]) === true || Array.isArray([])",
+    "implemented": false
+  }
+]

@@ -1,0 +1,1207 @@
+[
+  {
+    "feature": "UI/해상도",
+    "test_id": "ui-001",
+    "name": "게임 해상도 1920x1080 16:9 고정",
+    "input": {
+      "canvas_width": 1920,
+      "canvas_height": 1080
+    },
+    "expected": {
+      "aspect_ratio": "16:9",
+      "locked": true
+    },
+    "assertion": "canvas.width === 1920 && canvas.height === 1080 && windowAspect === 16/9",
+    "implemented": false
+  },
+  {
+    "feature": "UI/해상도",
+    "test_id": "ui-002",
+    "name": "창 크기 변경 시 16:9 비율 유지",
+    "input": {
+      "window_resize": {
+        "width": 2560,
+        "height": 1440
+      }
+    },
+    "expected": {
+      "letterboxed": true,
+      "aspect_ratio": "16:9"
+    },
+    "assertion": "resize 후 캔버스 비율이 16:9로 유지되고 레터박스/필름박스 처리됨",
+    "implemented": false
+  },
+  {
+    "feature": "UI/안전여백",
+    "test_id": "ui-003",
+    "name": "사방 48px 안전 여백 적용",
+    "input": {
+      "check_safe_area": true
+    },
+    "expected": {
+      "padding": {
+        "top": 48,
+        "bottom": 48,
+        "left": 48,
+        "right": 48
+      }
+    },
+    "assertion": "모든 UI 요소의 좌표가 top>=48 && left>=48 && right<=1872 && bottom<=1032 범위 내",
+    "implemented": false
+  },
+  {
+    "feature": "UI/레이어",
+    "test_id": "ui-004",
+    "name": "UI 레이어 순서 배경→정보패널→상호작용→모달/토스트",
+    "input": {
+      "layers": [
+        "background",
+        "info_panel",
+        "interaction",
+        "modal_toast"
+      ]
+    },
+    "expected": {
+      "z_index_order": [
+        "background < info_panel < interaction < modal_toast"
+      ]
+    },
+    "assertion": "레이어 z-index가 background < info_panel < interaction < modal_toast 순서임",
+    "implemented": false
+  },
+  {
+    "feature": "UI/모달",
+    "test_id": "ui-005",
+    "name": "모달 배경 dim 60% 불투명도",
+    "input": {
+      "open_modal": true
+    },
+    "expected": {
+      "overlay_opacity": 0.6
+    },
+    "assertion": "모달 열림 시 오버레이 opacity === 0.6",
+    "implemented": false
+  },
+  {
+    "feature": "UI/모달",
+    "test_id": "ui-006",
+    "name": "모달 표시 중 하단 상호작용 차단",
+    "input": {
+      "open_modal": true,
+      "click_background": true
+    },
+    "expected": {
+      "interaction_blocked": true
+    },
+    "assertion": "모달 열림 상태에서 배경 클릭/터치 이벤트가 무시됨",
+    "implemented": false
+  },
+  {
+    "feature": "UI/버튼",
+    "test_id": "ui-007",
+    "name": "버튼 높이 56px 최소 터치 폭 240px",
+    "input": {
+      "button_type": "primary"
+    },
+    "expected": {
+      "height": 56,
+      "min_width": 240
+    },
+    "assertion": "버튼 height === 56 && 버튼 width >= 240",
+    "implemented": false
+  },
+  {
+    "feature": "UI/버튼",
+    "test_id": "ui-008",
+    "name": "버튼 상태 4종(기본/hover/pressed/disabled) 전환",
+    "input": {
+      "states": [
+        "default",
+        "hover",
+        "pressed",
+        "disabled"
+      ]
+    },
+    "expected": {
+      "state_count": 4,
+      "visual_change_per_state": true
+    },
+    "assertion": "버튼이 default, hover, pressed, disabled 네 가지 시각 상태를 모두 가짐",
+    "implemented": false
+  },
+  {
+    "feature": "UI/버튼",
+    "test_id": "ui-009",
+    "name": "버튼 스타일 primary/secondary/destructive 구분",
+    "input": {
+      "styles": [
+        "primary",
+        "secondary",
+        "destructive"
+      ]
+    },
+    "expected": {
+      "style_count": 3,
+      "distinct_visuals": true
+    },
+    "assertion": "세 가지 버튼 스타일이 각각 고유한 색상/스타일로 렌더링됨",
+    "implemented": false
+  },
+  {
+    "feature": "UI/버튼",
+    "test_id": "ui-010",
+    "name": "disabled 버튼 클릭 무시",
+    "input": {
+      "button_state": "disabled",
+      "click": true
+    },
+    "expected": {
+      "action_triggered": false
+    },
+    "assertion": "disabled 상태 버튼 클릭 시 콜백이 실행되지 않음",
+    "implemented": false
+  },
+  {
+    "feature": "UI/토스트",
+    "test_id": "ui-011",
+    "name": "토스트 상단 중앙 표시 1.5초 기본",
+    "input": {
+      "show_toast": {
+        "type": "info",
+        "message": "테스트"
+      }
+    },
+    "expected": {
+      "position": "top_center",
+      "duration": 1500
+    },
+    "assertion": "토스트가 화면 상단 중앙에 표시되고 1.5초(1500ms) 후 자동 소멸",
+    "implemented": false
+  },
+  {
+    "feature": "UI/토스트",
+    "test_id": "ui-012",
+    "name": "토스트 색상 분리 - 획득/손실/상태이상/실패",
+    "input": {
+      "toast_types": [
+        "acquire",
+        "loss",
+        "status",
+        "fail"
+      ]
+    },
+    "expected": {
+      "distinct_colors": {
+        "acquire": "gold",
+        "loss": "red",
+        "status": "purple",
+        "fail": "gray"
+      }
+    },
+    "assertion": "획득(금색), 손실(빨강), 상태이상(보라), 실패(회색) 각각 다른 색상으로 표시됨",
+    "implemented": false
+  },
+  {
+    "feature": "UI/확인다이얼로그",
+    "test_id": "ui-013",
+    "name": "확인 다이얼로그 문장 1개 + 버튼 2개(확인 destructive/취소 secondary)",
+    "input": {
+      "show_confirm_dialog": {
+        "message": "정말 포기하시겠습니까?"
+      }
+    },
+    "expected": {
+      "sentence_count": 1,
+      "button_count": 2,
+      "confirm_style": "destructive",
+      "cancel_style": "secondary"
+    },
+    "assertion": "다이얼로그에 문장이 1개이고 확인 버튼이 destructive, 취소 버튼이 secondary 스타일임",
+    "implemented": false
+  },
+  {
+    "feature": "UI/전투HUD",
+    "test_id": "ui-014",
+    "name": "전투 HUD HP/MP/턴순서/상태이상 항상 노출",
+    "input": {
+      "battle_start": true
+    },
+    "expected": {
+      "always_visible": [
+        "HP_bar",
+        "MP_bar",
+        "turn_order",
+        "status_effects"
+      ]
+    },
+    "assertion": "전투 중 HP바, MP바, 턴 순서 표시, 상태이상 아이콘이 항상 화면에 노출됨",
+    "implemented": false
+  },
+  {
+    "feature": "UI/전투HUD",
+    "test_id": "ui-015",
+    "name": "스킬 선택 시 하단 중앙 미리보기 표시",
+    "input": {
+      "select_skill": {
+        "name": "강타",
+        "mp_cost": 5,
+        "description": "단일 1.3배"
+      }
+    },
+    "expected": {
+      "position": "bottom_center",
+      "content": {
+        "name": "강타",
+        "mp": 5,
+        "desc": "단일 1.3배"
+      }
+    },
+    "assertion": "스킬 선택 시 하단 중앙에 스킬 이름/MP 비용/설명 미리보기가 표시됨",
+    "implemented": false
+  },
+  {
+    "feature": "UI/맵",
+    "test_id": "ui-016",
+    "name": "맵 노드 타입별 아이콘 구분",
+    "input": {
+      "node_types": [
+        "battle",
+        "event",
+        "treasure",
+        "shop",
+        "campfire",
+        "unique",
+        "boss"
+      ]
+    },
+    "expected": {
+      "icons": {
+        "battle": "붉은검",
+        "event": "보라두루마리",
+        "treasure": "금색상자",
+        "shop": "초록가방",
+        "campfire": "주황불꽃",
+        "unique": "은색왕관",
+        "boss": "검은해골"
+      }
+    },
+    "assertion": "7가지 노드 타입이 각각 지정된 아이콘으로 렌더링됨",
+    "implemented": false
+  },
+  {
+    "feature": "UI/맵",
+    "test_id": "ui-017",
+    "name": "선택 가능 노드 100% 불투명, 불가 노드 35% 불투도",
+    "input": {
+      "nodes": [
+        {
+          "selectable": true
+        },
+        {
+          "selectable": false
+        }
+      ]
+    },
+    "expected": {
+      "selectable_opacity": 1.0,
+      "unselectable_opacity": 0.35
+    },
+    "assertion": "선택 가능 노드 opacity === 1.0 && 선택 불가 노드 opacity === 0.35",
+    "implemented": false
+  },
+  {
+    "feature": "UI/맵",
+    "test_id": "ui-018",
+    "name": "현재 위치 노드 흰색 펄스링 1.5초 주기",
+    "input": {
+      "current_node": {
+        "position": 3
+      }
+    },
+    "expected": {
+      "ring_color": "white",
+      "pulse_duration": 1500
+    },
+    "assertion": "현재 위치 노드에 흰색 펄스링이 1.5초(1500ms) 주기로 반복됨",
+    "implemented": false
+  },
+  {
+    "feature": "UI/이벤트",
+    "test_id": "ui-019",
+    "name": "이벤트 선택지 최소 2개 최대 4개",
+    "input": {
+      "event_options": [
+        2,
+        3,
+        4
+      ]
+    },
+    "expected": {
+      "min_options": 2,
+      "max_options": 4
+    },
+    "assertion": "모든 이벤트의 선택지 수가 2 <= count <= 4 범위 내",
+    "implemented": false
+  },
+  {
+    "feature": "UI/이벤트",
+    "test_id": "ui-020",
+    "name": "이벤트 UI 설명/선택지/결과 토스트 분리 표시",
+    "input": {
+      "event_flow": [
+        "description",
+        "choices",
+        "result_toast"
+      ]
+    },
+    "expected": {
+      "separated_phases": [
+        "description_panel",
+        "choice_buttons",
+        "result_toast"
+      ]
+    },
+    "assertion": "이벤트가 설명 표시→선택지 제시→결과 토스트의 세 단계로 분리되어 표시됨",
+    "implemented": false
+  },
+  {
+    "feature": "UI/전투가독성",
+    "test_id": "ui-021",
+    "name": "피해 숫자 0.2초 내 표시",
+    "input": {
+      "deal_damage": {
+        "value": 25
+      }
+    },
+    "expected": {
+      "display_delay_ms": 200
+    },
+    "assertion": "피해 발생 후 0.2초(200ms) 이내에 피해 숫자가 화면에 표시됨",
+    "implemented": false
+  },
+  {
+    "feature": "UI/전투가독성",
+    "test_id": "ui-022",
+    "name": "HP바 변화 0.25초 이내 완료",
+    "input": {
+      "hp_change": {
+        "from": 100,
+        "to": 75
+      }
+    },
+    "expected": {
+      "animation_duration_ms": 250
+    },
+    "assertion": "HP 변화 시 HP바 애니메이션이 0.25초(250ms) 이내에 완료됨",
+    "implemented": false
+  },
+  {
+    "feature": "UI/전투가독성",
+    "test_id": "ui-023",
+    "name": "치명타 금색 표시 + 120% 스케일 + 별도 사운드",
+    "input": {
+      "critical_hit": true
+    },
+    "expected": {
+      "color": "gold",
+      "scale": 1.2,
+      "unique_sound": true
+    },
+    "assertion": "치명타 시 피해 숫자가 금색이고 스케일이 120%이며 일반타와 다른 사운드 재생됨",
+    "implemented": false
+  },
+  {
+    "feature": "UI/애니메이션",
+    "test_id": "ui-024",
+    "name": "기본공격 애니메이션 0.35초",
+    "input": {
+      "action": "basic_attack"
+    },
+    "expected": {
+      "duration_ms": 350
+    },
+    "assertion": "기본공격 애니메이션 지속시간 === 350ms",
+    "implemented": false
+  },
+  {
+    "feature": "UI/애니메이션",
+    "test_id": "ui-025",
+    "name": "피격 플래시 0.12초",
+    "input": {
+      "action": "hit_flash"
+    },
+    "expected": {
+      "duration_ms": 120
+    },
+    "assertion": "피격 플래시 지속시간 === 120ms",
+    "implemented": false
+  },
+  {
+    "feature": "UI/애니메이션",
+    "test_id": "ui-026",
+    "name": "상태이상 표시 0.15초",
+    "input": {
+      "action": "status_effect_appear"
+    },
+    "expected": {
+      "duration_ms": 150
+    },
+    "assertion": "상태이상 아이콘 표시 애니메이션 지속시간 === 150ms",
+    "implemented": false
+  },
+  {
+    "feature": "UI/애니메이션",
+    "test_id": "ui-027",
+    "name": "보상 팝업 0.3초",
+    "input": {
+      "action": "reward_popup"
+    },
+    "expected": {
+      "duration_ms": 300
+    },
+    "assertion": "보상 팝업 애니메이션 지속시간 === 300ms",
+    "implemented": false
+  },
+  {
+    "feature": "UI/애니메이션",
+    "test_id": "ui-028",
+    "name": "승패 연출 0.5초",
+    "input": {
+      "action": "victory_or_defeat"
+    },
+    "expected": {
+      "duration_ms": 500
+    },
+    "assertion": "전투 승리/패배 연출 지속시간 === 500ms",
+    "implemented": false
+  },
+  {
+    "feature": "UI/파티클",
+    "test_id": "ui-029",
+    "name": "스킬당 파티클 12개 이하",
+    "input": {
+      "cast_skill": "회전참격"
+    },
+    "expected": {
+      "max_particles": 12
+    },
+    "assertion": "모든 스킬의 파티클 수가 12개 이하임",
+    "implemented": false
+  },
+  {
+    "feature": "UI/카메라",
+    "test_id": "ui-030",
+    "name": "피격 시 카메라 흔들림 최대 ±6%",
+    "input": {
+      "target_hit": true
+    },
+    "expected": {
+      "shake_max_percent": 6
+    },
+    "assertion": "피격 시 카메라 흔들림 오프셋이 ±6% 이내",
+    "implemented": false
+  },
+  {
+    "feature": "UI/폰트",
+    "test_id": "ui-031",
+    "name": "기본 폰트 Pretendard 또는 Noto Sans KR 적용",
+    "input": {
+      "check_fonts": true
+    },
+    "expected": {
+      "font_family_includes": [
+        "Pretendard",
+        "Noto Sans KR"
+      ]
+    },
+    "assertion": "font-family에 'Pretendard' 또는 'Noto Sans KR'이 포함됨",
+    "implemented": false
+  },
+  {
+    "feature": "UI/폰트",
+    "test_id": "ui-032",
+    "name": "본문 텍스트 24px 이상",
+    "input": {
+      "text_type": "body"
+    },
+    "expected": {
+      "min_font_size_px": 24
+    },
+    "assertion": "본문 텍스트의 font-size >= 24px",
+    "implemented": false
+  },
+  {
+    "feature": "UI/폰트",
+    "test_id": "ui-033",
+    "name": "경고/중요 텍스트 28px 이상",
+    "input": {
+      "text_type": "warning"
+    },
+    "expected": {
+      "min_font_size_px": 28
+    },
+    "assertion": "경고 및 중요 텍스트의 font-size >= 28px",
+    "implemented": false
+  },
+  {
+    "feature": "UI/HUD숫자",
+    "test_id": "ui-034",
+    "name": "HUD 본문 숫자 24px, 라벨 20px, 중요수치 28px 이상",
+    "input": {
+      "check_hud_font_sizes": true
+    },
+    "expected": {
+      "body_number": 24,
+      "label": 20,
+      "important_number": 28
+    },
+    "assertion": "HUD 본문 숫자 >= 24px && 라벨 >= 20px && 중요 수치 >= 28px",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/일반적/녹슨검병",
+    "test_id": "content-001",
+    "name": "녹슨 검병 스탯 검증 (HP82/ATK13/DEF5/SPD10)",
+    "input": {
+      "enemy": "녹슨 검병"
+    },
+    "expected": {
+      "hp": 82,
+      "atk": 13,
+      "def": 5,
+      "spd": 10,
+      "special": "none"
+    },
+    "assertion": "enemy.hp === 82 && enemy.atk === 13 && enemy.def === 5 && enemy.spd === 10",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/일반적/붉은사냥견",
+    "test_id": "content-002",
+    "name": "붉은 사냥견 스탯 검증 (HP74/ATK14/DEF4/SPD12/출혈)",
+    "input": {
+      "enemy": "붉은 사냥견"
+    },
+    "expected": {
+      "hp": 74,
+      "atk": 14,
+      "def": 4,
+      "spd": 12,
+      "status_inflict": "출혈"
+    },
+    "assertion": "enemy.hp === 74 && enemy.atk === 14 && enemy.def === 4 && enemy.spd === 12 && statusInflict === '출혈'",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/일반적/그을린궁수",
+    "test_id": "content-003",
+    "name": "그을린 궁수 스탯 검증 (HP76/ATK15/DEF4/SPD11/화상)",
+    "input": {
+      "enemy": "그을린 궁수"
+    },
+    "expected": {
+      "hp": 76,
+      "atk": 15,
+      "def": 4,
+      "spd": 11,
+      "status_inflict": "화상"
+    },
+    "assertion": "enemy.hp === 76 && enemy.atk === 15 && enemy.def === 4 && enemy.spd === 11 && statusInflict === '화상'",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/일반적/파쇄집사",
+    "test_id": "content-004",
+    "name": "파쇄 집사 스탯 검증 (HP88/ATK12/DEF6/SPD9/파쇄)",
+    "input": {
+      "enemy": "파쇄 집사"
+    },
+    "expected": {
+      "hp": 88,
+      "atk": 12,
+      "def": 6,
+      "spd": 9,
+      "status_inflict": "파쇄"
+    },
+    "assertion": "enemy.hp === 88 && enemy.atk === 12 && enemy.def === 6 && enemy.spd === 9 && statusInflict === '파쇄'",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/일반적/균열병졸",
+    "test_id": "content-005",
+    "name": "균열 병졸 스탯 검증 (HP90/ATK12/DEF5/SPD10/둔화)",
+    "input": {
+      "enemy": "균열 병졸"
+    },
+    "expected": {
+      "hp": 90,
+      "atk": 12,
+      "def": 5,
+      "spd": 10,
+      "status_inflict": "둔화"
+    },
+    "assertion": "enemy.hp === 90 && enemy.atk === 12 && enemy.def === 5 && enemy.spd === 10 && statusInflict === '둔화'",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/일반적/달빛사제",
+    "test_id": "content-006",
+    "name": "달빛 사제 스탯 검증 (HP79/ATK13/DEF4/SPD11/약화)",
+    "input": {
+      "enemy": "달빛 사제"
+    },
+    "expected": {
+      "hp": 79,
+      "atk": 13,
+      "def": 4,
+      "spd": 11,
+      "status_inflict": "약화"
+    },
+    "assertion": "enemy.hp === 79 && enemy.atk === 13 && enemy.def === 4 && enemy.spd === 11 && statusInflict === '약화'",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/엘리트/철갑감시자",
+    "test_id": "content-007",
+    "name": "철갑 감시자 스탯 및 3턴 루프 검증",
+    "input": {
+      "enemy": "철갑 감시자"
+    },
+    "expected": {
+      "hp": 160,
+      "atk": 17,
+      "def": 8,
+      "spd": 10,
+      "loop_length": 3
+    },
+    "assertion": "enemy.hp === 160 && enemy.atk === 17 && enemy.def === 8 && enemy.spd === 10 && enemy.pattern.length === 3",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/엘리트/화염집행관",
+    "test_id": "content-008",
+    "name": "화염 집행관 스탯/화상/3턴 루프 검증",
+    "input": {
+      "enemy": "화염 집행관"
+    },
+    "expected": {
+      "hp": 148,
+      "atk": 20,
+      "def": 6,
+      "spd": 12,
+      "status_inflict": "화상",
+      "loop_length": 3
+    },
+    "assertion": "enemy.hp === 148 && enemy.atk === 20 && enemy.def === 6 && enemy.spd === 12 && statusInflict === '화상' && enemy.pattern.length === 3",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/엘리트/붉은달의식사",
+    "test_id": "content-009",
+    "name": "붉은 달 의식사 스탯/약화+파쇄/4턴 루프 검증",
+    "input": {
+      "enemy": "붉은 달 의식사"
+    },
+    "expected": {
+      "hp": 138,
+      "atk": 18,
+      "def": 7,
+      "spd": 13,
+      "status_inflicts": [
+        "약화",
+        "파쇄"
+      ],
+      "loop_length": 4
+    },
+    "assertion": "enemy.hp === 138 && enemy.atk === 18 && enemy.def === 7 && enemy.spd === 13 && enemy.pattern.length === 4 && statusInflicts.includes('약화') && statusInflicts.includes('파쇄')",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/유니크/봉인된문지기",
+    "test_id": "content-010",
+    "name": "봉인된 문지기 스탯/반격/3턴 루프 검증",
+    "input": {
+      "enemy": "봉인된 문지기"
+    },
+    "expected": {
+      "hp": 190,
+      "atk": 18,
+      "def": 8,
+      "spd": 11,
+      "mechanic": "반격",
+      "loop_length": 3
+    },
+    "assertion": "enemy.hp === 190 && enemy.atk === 18 && enemy.def === 8 && enemy.spd === 11 && enemy.mechanic === '반격' && enemy.pattern.length === 3",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/유니크/달의사냥꾼",
+    "test_id": "content-011",
+    "name": "달의 사냥꾼 스탯/출혈/4턴 루프 검증",
+    "input": {
+      "enemy": "달의 사냥꾼"
+    },
+    "expected": {
+      "hp": 176,
+      "atk": 20,
+      "def": 6,
+      "spd": 15,
+      "status_inflict": "출혈",
+      "loop_length": 4
+    },
+    "assertion": "enemy.hp === 176 && enemy.atk === 20 && enemy.def === 6 && enemy.spd === 15 && statusInflict === '출혈' && enemy.pattern.length === 4",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/보스/붉은달의파수꾼",
+    "test_id": "content-012",
+    "name": "붉은 달의 파수꾼 스탯/2페이즈/HP50% 전환 검증",
+    "input": {
+      "enemy": "붉은 달의 파수꾼"
+    },
+    "expected": {
+      "hp": 450,
+      "atk": 22,
+      "def": 8,
+      "spd": 10,
+      "phases": 2,
+      "phase_transition_hp_percent": 50
+    },
+    "assertion": "enemy.hp === 450 && enemy.atk === 22 && enemy.def === 8 && enemy.spd === 10 && enemy.phases === 2 && phaseTransitionAt === enemy.hp * 0.5",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/보스/붉은달의파수꾼",
+    "test_id": "content-013",
+    "name": "보스 HP 50% 도달 시 2페이즈 전환 발동",
+    "input": {
+      "boss_hp": 225,
+      "max_hp": 450
+    },
+    "expected": {
+      "phase_transition_triggered": true
+    },
+    "assertion": "boss.currentHP <= boss.maxHP * 0.5 일 때 phaseTransition 이벤트가 발생함",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬/전위딜러",
+    "test_id": "content-014",
+    "name": "전위딜러 기본공격 - 0MP/단일/배율1.0",
+    "input": {
+      "skill": "기본공격",
+      "character": "전위딜러"
+    },
+    "expected": {
+      "mp_cost": 0,
+      "target": "single",
+      "multiplier": 1.0,
+      "status_effect": "none",
+      "status_chance": 0
+    },
+    "assertion": "skill.mp === 0 && skill.target === 'single' && skill.multiplier === 1.0",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬/전위딜러",
+    "test_id": "content-015",
+    "name": "전위딜러 강타 - 5MP/단일/배율1.3",
+    "input": {
+      "skill": "강타",
+      "character": "전위딜러"
+    },
+    "expected": {
+      "mp_cost": 5,
+      "target": "single",
+      "multiplier": 1.3,
+      "status_effect": "none",
+      "status_chance": 0
+    },
+    "assertion": "skill.mp === 5 && skill.target === 'single' && skill.multiplier === 1.3",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬/전위딜러",
+    "test_id": "content-016",
+    "name": "전위딜러 돌진베기 - 8MP/단일/배율1.6/출혈30%",
+    "input": {
+      "skill": "돌진베기",
+      "character": "전위딜러"
+    },
+    "expected": {
+      "mp_cost": 8,
+      "target": "single",
+      "multiplier": 1.6,
+      "status_effect": "출혈",
+      "status_chance": 0.3
+    },
+    "assertion": "skill.mp === 8 && skill.target === 'single' && skill.multiplier === 1.6 && skill.status === '출혈' && skill.statusChance === 0.3",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬/전위딜러",
+    "test_id": "content-017",
+    "name": "전위딜러 회전참격 - 12MP/전체/배율0.7",
+    "input": {
+      "skill": "회전참격",
+      "character": "전위딜러"
+    },
+    "expected": {
+      "mp_cost": 12,
+      "target": "all",
+      "multiplier": 0.7,
+      "status_effect": "none",
+      "status_chance": 0
+    },
+    "assertion": "skill.mp === 12 && skill.target === 'all' && skill.multiplier === 0.7",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬/수호자",
+    "test_id": "content-018",
+    "name": "수호자 기본공격 - 0MP/단일/배율1.0",
+    "input": {
+      "skill": "기본공격",
+      "character": "수호자"
+    },
+    "expected": {
+      "mp_cost": 0,
+      "target": "single",
+      "multiplier": 1.0
+    },
+    "assertion": "skill.mp === 0 && skill.target === 'single' && skill.multiplier === 1.0",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬/수호자",
+    "test_id": "content-019",
+    "name": "수호자 방어태세 - 3MP/자신/방어+30%",
+    "input": {
+      "skill": "방어태세",
+      "character": "수호자"
+    },
+    "expected": {
+      "mp_cost": 3,
+      "target": "self",
+      "effect": "def_boost",
+      "value": 0.3
+    },
+    "assertion": "skill.mp === 3 && skill.target === 'self' && skill.defBoost === 0.3",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬/수호자",
+    "test_id": "content-020",
+    "name": "수호자 도발 - 5MP/전체적/대상고정",
+    "input": {
+      "skill": "도발",
+      "character": "수호자"
+    },
+    "expected": {
+      "mp_cost": 5,
+      "target": "all_enemies",
+      "effect": "taunt"
+    },
+    "assertion": "skill.mp === 5 && skill.target === 'all_enemies' && skill.effect === 'taunt'",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬/수호자",
+    "test_id": "content-021",
+    "name": "수호자 방패타격 - 8MP/단일/배율1.3/둔화40%",
+    "input": {
+      "skill": "방패타격",
+      "character": "수호자"
+    },
+    "expected": {
+      "mp_cost": 8,
+      "target": "single",
+      "multiplier": 1.3,
+      "status_effect": "둔화",
+      "status_chance": 0.4
+    },
+    "assertion": "skill.mp === 8 && skill.target === 'single' && skill.multiplier === 1.3 && skill.status === '둔화' && skill.statusChance === 0.4",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬/마법지원가",
+    "test_id": "content-022",
+    "name": "마법지원가 기본공격 - 0MP/단일/배율1.0",
+    "input": {
+      "skill": "기본공격",
+      "character": "마법지원가"
+    },
+    "expected": {
+      "mp_cost": 0,
+      "target": "single",
+      "multiplier": 1.0
+    },
+    "assertion": "skill.mp === 0 && skill.target === 'single' && skill.multiplier === 1.0",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬/마법지원가",
+    "test_id": "content-023",
+    "name": "마법지원가 화염 - 6MP/단일/배율1.3/화상35%",
+    "input": {
+      "skill": "화염",
+      "character": "마법지원가"
+    },
+    "expected": {
+      "mp_cost": 6,
+      "target": "single",
+      "multiplier": 1.3,
+      "status_effect": "화상",
+      "status_chance": 0.35
+    },
+    "assertion": "skill.mp === 6 && skill.target === 'single' && skill.multiplier === 1.3 && skill.status === '화상' && skill.statusChance === 0.35",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬/마법지원가",
+    "test_id": "content-024",
+    "name": "마법지원가 치유 - 8MP/아군1/최대HP20%",
+    "input": {
+      "skill": "치유",
+      "character": "마법지원가"
+    },
+    "expected": {
+      "mp_cost": 8,
+      "target": "ally_single",
+      "heal_type": "max_hp_percent",
+      "value": 0.2
+    },
+    "assertion": "skill.mp === 8 && skill.target === 'ally_single' && skill.healPercent === 0.2",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬/마법지원가",
+    "test_id": "content-025",
+    "name": "마법지원가 약화저주 - 10MP/단일/배율0.8/약화50%",
+    "input": {
+      "skill": "약화저주",
+      "character": "마법지원가"
+    },
+    "expected": {
+      "mp_cost": 10,
+      "target": "single",
+      "multiplier": 0.8,
+      "status_effect": "약화",
+      "status_chance": 0.5
+    },
+    "assertion": "skill.mp === 10 && skill.target === 'single' && skill.multiplier === 0.8 && skill.status === '약화' && skill.statusChance === 0.5",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/일반적종합",
+    "test_id": "content-026",
+    "name": "일반 적 6종 전원 데이터 존재 및 고유 ID 보유",
+    "input": {
+      "check_all_normal_enemies": true
+    },
+    "expected": {
+      "count": 6,
+      "names": [
+        "녹슨 검병",
+        "붉은 사냥견",
+        "그을린 궁수",
+        "파쇄 집사",
+        "균열 병졸",
+        "달빛 사제"
+      ]
+    },
+    "assertion": "일반 적 데이터가 6종 모두 존재하고 각각 고유 ID를 가짐",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/엘리트종합",
+    "test_id": "content-027",
+    "name": "엘리트 적 3종 전원 패턴 루프 길이 검증",
+    "input": {
+      "check_all_elites": true
+    },
+    "expected": {
+      "count": 3,
+      "loop_lengths": {
+        "철갑 감시자": 3,
+        "화염 집행관": 3,
+        "붉은 달 의식사": 4
+      }
+    },
+    "assertion": "엘리트 3종의 패턴 루프 길이가 각각 지정된 턴 수와 일치함",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/유니크종합",
+    "test_id": "content-028",
+    "name": "유니크 적 2종 전원 고유 메커니즘 및 루프 검증",
+    "input": {
+      "check_all_uniques": true
+    },
+    "expected": {
+      "count": 2,
+      "mechanics": {
+        "봉인된 문지기": {
+          "type": "반격",
+          "loop": 3
+        },
+        "달의 사냥꾼": {
+          "type": "출혈",
+          "loop": 4
+        }
+      }
+    },
+    "assertion": "유니크 2종이 각각 지정된 고유 메커니즘과 루프 길이를 가짐",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬종합",
+    "test_id": "content-029",
+    "name": "캐릭터 스킬 12개 전원 등록 검증",
+    "input": {
+      "check_all_skills": true
+    },
+    "expected": {
+      "total_count": 12,
+      "per_character": {
+        "전위딜러": 4,
+        "수호자": 4,
+        "마법지원가": 4
+      }
+    },
+    "assertion": "전체 스킬이 12개이고 캐릭터당 4개씩 할당됨",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬종합",
+    "test_id": "content-030",
+    "name": "MP 소모 스킬 사용 시 MP 차감 검증",
+    "input": {
+      "cast_skill": "강타",
+      "current_mp": 10
+    },
+    "expected": {
+      "mp_after": 5
+    },
+    "assertion": "5MP 스킬 사용 후 character.mp === character.mp_before - 5",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/스킬종합",
+    "test_id": "content-031",
+    "name": "MP 부족 시 스킬 사용 불가",
+    "input": {
+      "cast_skill": "회전참격",
+      "current_mp": 5
+    },
+    "expected": {
+      "skill_usable": false
+    },
+    "assertion": "currentMP < skill.mpCost 일 때 스킬 버튼이 disabled 상태이고 사용 불가함",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/상태이상종합",
+    "test_id": "content-032",
+    "name": "상태이상 부여 확률 적용 검증 - 돌진베기 출혈 30%",
+    "input": {
+      "skill": "돌진베기",
+      "trials": 1000,
+      "expected_rate": 0.3
+    },
+    "expected": {
+      "actual_rate_tolerance": 0.05
+    },
+    "assertion": "1000회 시뮬레이션 시 출혈 부여 비율이 25%~35% 범위 내 (0.3 ± 0.05)",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/상태이상종합",
+    "test_id": "content-033",
+    "name": "상태이상 종류 커버리지 - 출혈/화상/파쇄/둔화/약화 전부 구현",
+    "input": {
+      "check_status_types": true
+    },
+    "expected": {
+      "types": [
+        "출혈",
+        "화상",
+        "파쇄",
+        "둔화",
+        "약화"
+      ]
+    },
+    "assertion": "5가지 상태이상 타입이 모두 데이터에 정의되고 게임 내에 적용 가능함",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/보스종합",
+    "test_id": "content-034",
+    "name": "보스 1페이즈와 2페이즈가 서로 다른 패턴 사용",
+    "input": {
+      "boss": "붉은 달의 파수꾼",
+      "check_phases": true
+    },
+    "expected": {
+      "phase1_pattern_differs_phase2": true
+    },
+    "assertion": "보스의 1페이즈 패턴과 2페이즈 패턴이 다름 (적어도 하나의 스킬/행동이 다름)",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/밸런스",
+    "test_id": "content-035",
+    "name": "일반 적 HP 범위 70~95 검증",
+    "input": {
+      "check_normal_enemy_hp_range": true
+    },
+    "expected": {
+      "min_hp": 70,
+      "max_hp": 95
+    },
+    "assertion": "모든 일반 적의 HP가 70 이상 95 이하 범위 내",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/밸런스",
+    "test_id": "content-036",
+    "name": "엘리트 적 HP 범위 130~170 검증",
+    "input": {
+      "check_elite_enemy_hp_range": true
+    },
+    "expected": {
+      "min_hp": 130,
+      "max_hp": 170
+    },
+    "assertion": "모든 엘리트 적의 HP가 130 이상 170 이하 범위 내",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/밸런스",
+    "test_id": "content-037",
+    "name": "유니크 적 HP 최소 176 검증",
+    "input": {
+      "compare_unique_vs_elite_hp": true
+    },
+    "expected": {
+      "min_unique_hp": 176
+    },
+    "assertion": "모든 유니크 적의 HP >= 176",
+    "implemented": false
+  },
+  {
+    "feature": "콘텐츠/밸런스",
+    "test_id": "content-038",
+    "name": "보스 HP가 유니크 대비 2배 이상 검증",
+    "input": {
+      "compare_boss_vs_unique_hp": true
+    },
+    "expected": {
+      "boss_hp": 450,
+      "unique_max_hp": 190,
+      "boss_hp_multiplier": 2.3684210526315788
+    },
+    "assertion": "보스 HP(450) >= 유니크 최대 HP(190) * 2 = 380",
+    "implemented": false
+  }
+]

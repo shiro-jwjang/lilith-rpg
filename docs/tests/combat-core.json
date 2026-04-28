@@ -1,0 +1,1303 @@
+[
+  {
+    "feature": "기본 피해 공식",
+    "test_id": "combat-001",
+    "name": "기본 피해 계산 - 정상 케이스",
+    "input": {
+      "attacker_atk": 100,
+      "skill_coefficient": 1.2,
+      "defender_def": 30
+    },
+    "expected": {
+      "damage": 90
+    },
+    "assertion": "floor(100 × 1.2) - 30 = 120 - 30 = 90",
+    "implemented": false
+  },
+  {
+    "feature": "기본 피해 공식",
+    "test_id": "combat-002",
+    "name": "최소 피해 보장 - 방어력이 공격력을 초과할 때 피해 1",
+    "input": {
+      "attacker_atk": 50,
+      "skill_coefficient": 1.0,
+      "defender_def": 80
+    },
+    "expected": {
+      "damage": 1
+    },
+    "assertion": "max(1, floor(50 × 1.0) - 80) = max(1, -30) = 1",
+    "implemented": false
+  },
+  {
+    "feature": "기본 피해 공식",
+    "test_id": "combat-003",
+    "name": "피해가 정확히 0이 되는 경계값",
+    "input": {
+      "attacker_atk": 100,
+      "skill_coefficient": 0.5,
+      "defender_def": 50
+    },
+    "expected": {
+      "damage": 1
+    },
+    "assertion": "max(1, floor(100 × 0.5) - 50) = max(1, 0) = 1",
+    "implemented": false
+  },
+  {
+    "feature": "기본 피해 공식",
+    "test_id": "combat-004",
+    "name": "소수점 계수의 내림(floor) 처리",
+    "input": {
+      "attacker_atk": 77,
+      "skill_coefficient": 0.7,
+      "defender_def": 10
+    },
+    "expected": {
+      "damage": 43
+    },
+    "assertion": "max(1, floor(77 × 0.7) - 10) = max(1, floor(53.9) - 10) = max(1, 53 - 10) = 43",
+    "implemented": false
+  },
+  {
+    "feature": "기본 피해 공식",
+    "test_id": "combat-005",
+    "name": "방어력 0인 경우",
+    "input": {
+      "attacker_atk": 80,
+      "skill_coefficient": 1.5,
+      "defender_def": 0
+    },
+    "expected": {
+      "damage": 120
+    },
+    "assertion": "max(1, floor(80 × 1.5) - 0) = max(1, 120) = 120",
+    "implemented": false
+  },
+  {
+    "feature": "치명타",
+    "test_id": "combat-006",
+    "name": "치명타 발생 시 피해 1.5배",
+    "input": {
+      "base_damage": 100,
+      "is_critical": true,
+      "crit_multiplier": 1.5
+    },
+    "expected": {
+      "damage": 150
+    },
+    "assertion": "100 × 1.5 = 150",
+    "implemented": false
+  },
+  {
+    "feature": "치명타",
+    "test_id": "combat-007",
+    "name": "치명타 미발생 시 피해 그대로",
+    "input": {
+      "base_damage": 100,
+      "is_critical": false,
+      "crit_multiplier": 1.5
+    },
+    "expected": {
+      "damage": 100
+    },
+    "assertion": "치명타 미발생 → 배수 미적용 → 100",
+    "implemented": false
+  },
+  {
+    "feature": "치명타",
+    "test_id": "combat-008",
+    "name": "치명타 + 최소 피해 보장 - 최소 피해에도 1.5배 적용 여부 (최소 1 보장)",
+    "input": {
+      "attacker_atk": 10,
+      "skill_coefficient": 1.0,
+      "defender_def": 100,
+      "is_critical": true
+    },
+    "expected": {
+      "damage": 1
+    },
+    "assertion": "max(1, floor(10 × 1.0) - 100) = max(1, -90) = 1, 치명타라도 최소 피해 보장",
+    "implemented": false
+  },
+  {
+    "feature": "고정 피해",
+    "test_id": "combat-009",
+    "name": "고정 피해는 방어력 무시",
+    "input": {
+      "fixed_damage": 50,
+      "defender_def": 999
+    },
+    "expected": {
+      "damage": 50
+    },
+    "assertion": "고정 피해는 방어력 계산에 포함되지 않음 → 50",
+    "implemented": false
+  },
+  {
+    "feature": "고정 피해",
+    "test_id": "combat-010",
+    "name": "고정 피해는 치명타 영향 없음",
+    "input": {
+      "fixed_damage": 50,
+      "is_critical": true
+    },
+    "expected": {
+      "damage": 50
+    },
+    "assertion": "고정 피해는 치명타 배수 미적용 → 50",
+    "implemented": false
+  },
+  {
+    "feature": "출혈 지속 피해",
+    "test_id": "combat-011",
+    "name": "출혈 1스택 - 턴 종료 시 최대 HP의 5% 피해",
+    "input": {
+      "unit_max_hp": 200,
+      "bleed_stacks": 1
+    },
+    "expected": {
+      "dot_damage": 10
+    },
+    "assertion": "floor(200 × 0.05 × 1) = floor(10) = 10",
+    "implemented": false
+  },
+  {
+    "feature": "출혈 지속 피해",
+    "test_id": "combat-012",
+    "name": "출혈 3스택 (최대 중첩) - 턴 종료 시 최대 HP의 15% 피해",
+    "input": {
+      "unit_max_hp": 200,
+      "bleed_stacks": 3
+    },
+    "expected": {
+      "dot_damage": 30
+    },
+    "assertion": "floor(200 × 0.05 × 3) = floor(30) = 30",
+    "implemented": false
+  },
+  {
+    "feature": "출혈 지속 피해",
+    "test_id": "combat-013",
+    "name": "출혈은 방어력 무시",
+    "input": {
+      "unit_max_hp": 200,
+      "bleed_stacks": 2,
+      "unit_def": 999
+    },
+    "expected": {
+      "dot_damage": 20
+    },
+    "assertion": "방어력 무시 → floor(200 × 0.05 × 2) = 20",
+    "implemented": false
+  },
+  {
+    "feature": "출혈 지속 피해",
+    "test_id": "combat-014",
+    "name": "출혈 피해로 HP 0 도달 시 사망 처리",
+    "input": {
+      "unit_max_hp": 100,
+      "unit_current_hp": 5,
+      "bleed_stacks": 1
+    },
+    "expected": {
+      "dot_damage": 5,
+      "unit_alive": false
+    },
+    "assertion": "floor(100 × 0.05 × 1) = 5, 현재 HP 5 - 5 = 0 → 사망",
+    "implemented": false
+  },
+  {
+    "feature": "화상 지속 피해",
+    "test_id": "combat-015",
+    "name": "화상 1스택 - 턴 종료 시 최대 HP의 6% 피해",
+    "input": {
+      "unit_max_hp": 200,
+      "burn_stacks": 1
+    },
+    "expected": {
+      "dot_damage": 12
+    },
+    "assertion": "floor(200 × 0.06 × 1) = floor(12) = 12",
+    "implemented": false
+  },
+  {
+    "feature": "화상 지속 피해",
+    "test_id": "combat-016",
+    "name": "화상 3스택 (최대 중첩) - 턴 종료 시 최대 HP의 18% 피해",
+    "input": {
+      "unit_max_hp": 200,
+      "burn_stacks": 3
+    },
+    "expected": {
+      "dot_damage": 36
+    },
+    "assertion": "floor(200 × 0.06 × 3) = floor(36) = 36",
+    "implemented": false
+  },
+  {
+    "feature": "화상 지속 피해",
+    "test_id": "combat-017",
+    "name": "화상은 방어력 무시",
+    "input": {
+      "unit_max_hp": 200,
+      "burn_stacks": 2,
+      "unit_def": 999
+    },
+    "expected": {
+      "dot_damage": 24
+    },
+    "assertion": "방어력 무시 → floor(200 × 0.06 × 2) = 24",
+    "implemented": false
+  },
+  {
+    "feature": "출혈+화상 복합 지속 피해",
+    "test_id": "combat-018",
+    "name": "출혈과 화상 동시 적용 시 합산 피해",
+    "input": {
+      "unit_max_hp": 200,
+      "unit_current_hp": 100,
+      "bleed_stacks": 2,
+      "burn_stacks": 1
+    },
+    "expected": {
+      "total_dot_damage": 32,
+      "unit_current_hp_after": 68
+    },
+    "assertion": "출혈 2스택: floor(200×0.05×2)=20 + 화상 1스택: floor(200×0.06×1)=12 = 32, HP 100-32=68",
+    "implemented": false
+  },
+  {
+    "feature": "속도 동률 처리",
+    "test_id": "combat-019",
+    "name": "아군과 적 속도 동률 시 아군 우선",
+    "input": {
+      "ally_speed": 100,
+      "enemy_speed": 100
+    },
+    "expected": {
+      "first_actor": "ally"
+    },
+    "assertion": "속도 동률 → 아군 > 적 → 아군이 먼저 행동",
+    "implemented": false
+  },
+  {
+    "feature": "속도 동률 처리",
+    "test_id": "combat-020",
+    "name": "같은 진영 내 속도 동률 시 HP비율 낮은 유닛 우선",
+    "input": {
+      "ally_a": {
+        "speed": 100,
+        "current_hp": 50,
+        "max_hp": 100,
+        "id": 1
+      },
+      "ally_b": {
+        "speed": 100,
+        "current_hp": 80,
+        "max_hp": 100,
+        "id": 2
+      }
+    },
+    "expected": {
+      "first_actor": "ally_a"
+    },
+    "assertion": "HP비율 A: 50% < B: 80% → A가 먼저 행동",
+    "implemented": false
+  },
+  {
+    "feature": "속도 동률 처리",
+    "test_id": "combat-021",
+    "name": "같은 진영 + 같은 HP비율 시 내부 ID 순서 우선",
+    "input": {
+      "ally_a": {
+        "speed": 100,
+        "current_hp": 80,
+        "max_hp": 100,
+        "id": 3
+      },
+      "ally_b": {
+        "speed": 100,
+        "current_hp": 80,
+        "max_hp": 100,
+        "id": 1
+      }
+    },
+    "expected": {
+      "first_actor": "ally_b"
+    },
+    "assertion": "HP비율 동률 → 내부 ID 1 < 3 → B(ID=1)가 먼저 행동",
+    "implemented": false
+  },
+  {
+    "feature": "턴 구조 - 턴 시작",
+    "test_id": "combat-022",
+    "name": "턴 시작 시 버프/디버프 지속 턴 감소 후 만료 제거",
+    "input": {
+      "unit": {
+        "buff_remaining_turns": 1,
+        "debuff_remaining_turns": 2
+      }
+    },
+    "expected": {
+      "buff_removed": true,
+      "debuff_remaining_turns": 1
+    },
+    "assertion": "버프 1턴 남음 → 감소 후 0 → 만료 제거, 디버프 2턴 → 감소 후 1턴 유지",
+    "implemented": false
+  },
+  {
+    "feature": "턴 구조 - 기절 체크",
+    "test_id": "combat-023",
+    "name": "턴 시작 시 기절 상태이면 행동 스킵",
+    "input": {
+      "unit": {
+        "status": "stun",
+        "remaining_turns": 1
+      }
+    },
+    "expected": {
+      "action_skipped": true,
+      "stun_removed_after_turn": true
+    },
+    "assertion": "기절 중 → 행동 불가, 기절은 1턴 지속이므로 턴 시작 처리 시 감소→0→제거 (단 해당 턴은 스킵)",
+    "implemented": false
+  },
+  {
+    "feature": "턴 구조 - 턴 종료",
+    "test_id": "combat-024",
+    "name": "턴 종료 시 지속 피해 적용 후 HP 0 체크 → 사망",
+    "input": {
+      "unit_max_hp": 100,
+      "unit_current_hp": 3,
+      "burn_stacks": 1
+    },
+    "expected": {
+      "dot_damage": 6,
+      "unit_alive": false
+    },
+    "assertion": "화상 1스택: floor(100×0.06)=6, HP 3-6 → 0 미만이므로 0으로 보정 → 사망 처리",
+    "implemented": false
+  },
+  {
+    "feature": "턴 구조 - 전투 종료",
+    "test_id": "combat-025",
+    "name": "모든 행동 완료 후 아군 전멸 체크",
+    "input": {
+      "ally_1_hp": 0,
+      "ally_2_hp": 0,
+      "ally_3_hp": 0,
+      "enemy_1_hp": 50
+    },
+    "expected": {
+      "battle_result": "defeat",
+      "run_terminated": true
+    },
+    "assertion": "아군 전멸 → 전투 패배 → 런 종료",
+    "implemented": false
+  },
+  {
+    "feature": "턴 구조 - 전투 종료",
+    "test_id": "combat-026",
+    "name": "모든 행동 완료 후 적 전멸 체크",
+    "input": {
+      "ally_1_hp": 30,
+      "enemy_1_hp": 0,
+      "enemy_2_hp": 0
+    },
+    "expected": {
+      "battle_result": "victory",
+      "run_continues": true
+    },
+    "assertion": "적 전멸 → 전투 승리 → 런 계속",
+    "implemented": false
+  },
+  {
+    "feature": "MP 소비",
+    "test_id": "combat-027",
+    "name": "MP 부족 시 해당 스킬 사용 불가",
+    "input": {
+      "unit_mp": 5,
+      "skill_mp_cost": 10
+    },
+    "expected": {
+      "skill_usable": false
+    },
+    "assertion": "현재 MP 5 < 필요 MP 10 → 스킬 사용 불가",
+    "implemented": false
+  },
+  {
+    "feature": "MP 소비",
+    "test_id": "combat-028",
+    "name": "MP 충분 시 스킬 사용 후 MP 차감",
+    "input": {
+      "unit_mp": 20,
+      "skill_mp_cost": 10
+    },
+    "expected": {
+      "skill_usable": true,
+      "mp_after": 10
+    },
+    "assertion": "20 >= 10 → 스킬 사용 가능, MP 차감: 20 - 10 = 10",
+    "implemented": false
+  },
+  {
+    "feature": "MP 소비",
+    "test_id": "combat-029",
+    "name": "MP 정확히 일치 시 스킬 사용 가능",
+    "input": {
+      "unit_mp": 10,
+      "skill_mp_cost": 10
+    },
+    "expected": {
+      "skill_usable": true,
+      "mp_after": 0
+    },
+    "assertion": "10 >= 10 → 스킬 사용 가능, MP 차감: 10 - 10 = 0",
+    "implemented": false
+  },
+  {
+    "feature": "적 AI - 일반 적",
+    "test_id": "combat-030",
+    "name": "일반 적 스킬 선택 가중치: 기본공격 50% / 상태이상 30% / 고계수 20%",
+    "input": {
+      "enemy_type": "normal",
+      "skills": [
+        {
+          "type": "basic_attack",
+          "weight": 50
+        },
+        {
+          "type": "status_effect",
+          "weight": 30
+        },
+        {
+          "type": "high_coefficient",
+          "weight": 20
+        }
+      ]
+    },
+    "expected": {
+      "total_weight": 100,
+      "weight_distribution": {
+        "basic_attack": 50,
+        "status_effect": 30,
+        "high_coefficient": 20
+      }
+    },
+    "assertion": "가중치 합 = 100, 기본공격: 50%, 상태이상: 30%, 고계수: 20%",
+    "implemented": false
+  },
+  {
+    "feature": "적 AI - 일반 적",
+    "test_id": "combat-031",
+    "name": "일반 적 조건 불충족 시 다음 후보 평가",
+    "input": {
+      "enemy_type": "normal",
+      "first_choice": "high_coefficient",
+      "first_choice_condition_met": false,
+      "second_choice": "status_effect",
+      "second_choice_condition_met": true
+    },
+    "expected": {
+      "selected_skill": "status_effect"
+    },
+    "assertion": "고계수 조건 불충족 → 상태이상 평가 → 조건 충족 → 상태이상 선택",
+    "implemented": false
+  },
+  {
+    "feature": "적 AI - 일반 적",
+    "test_id": "combat-032",
+    "name": "일반 적 모든 조건 불충족 시 기본 공격 폴백",
+    "input": {
+      "enemy_type": "normal",
+      "first_choice": "status_effect",
+      "first_choice_condition_met": false,
+      "second_choice": "high_coefficient",
+      "second_choice_condition_met": false
+    },
+    "expected": {
+      "selected_skill": "basic_attack"
+    },
+    "assertion": "상태이상/고계수 모두 조건 불충족 → 기본 공격으로 폴백",
+    "implemented": false
+  },
+  {
+    "feature": "적 AI - 엘리트/유니크/보스",
+    "test_id": "combat-033",
+    "name": "엘리트/유니크/보스는 고정 루프 사용",
+    "input": {
+      "enemy_type": "boss",
+      "skill_loop": [
+        "skill_a",
+        "skill_b",
+        "skill_c"
+      ],
+      "current_loop_index": 0
+    },
+    "expected": {
+      "selected_skill": "skill_a",
+      "next_loop_index": 1
+    },
+    "assertion": "고정 루프 인덱스 0 → skill_a 선택, 다음 인덱스 1",
+    "implemented": false
+  },
+  {
+    "feature": "적 AI - 엘리트/유니크/보스",
+    "test_id": "combat-034",
+    "name": "고정 루프 순환 - 마지막 인덱스 후 처음으로",
+    "input": {
+      "enemy_type": "boss",
+      "skill_loop": [
+        "skill_a",
+        "skill_b"
+      ],
+      "current_loop_index": 1
+    },
+    "expected": {
+      "selected_skill": "skill_b",
+      "next_loop_index": 0
+    },
+    "assertion": "인덱스 1 → skill_b, 다음 인덱스 (1+1) % 2 = 0",
+    "implemented": false
+  },
+  {
+    "feature": "적 타겟팅",
+    "test_id": "combat-035",
+    "name": "단일 타겟: HP 비율 낮은 아군 우선",
+    "input": {
+      "target_type": "single",
+      "allies": [
+        {
+          "id": "ally_1",
+          "current_hp": 30,
+          "max_hp": 100
+        },
+        {
+          "id": "ally_2",
+          "current_hp": 80,
+          "max_hp": 100
+        },
+        {
+          "id": "ally_3",
+          "current_hp": 50,
+          "max_hp": 100
+        }
+      ]
+    },
+    "expected": {
+      "target": "ally_1"
+    },
+    "assertion": "HP비율: ally_1=30% < ally_3=50% < ally_2=80% → ally_1 타겟",
+    "implemented": false
+  },
+  {
+    "feature": "적 타겟팅",
+    "test_id": "combat-036",
+    "name": "광역 타겟: 조건 없이 전체 아군 대상",
+    "input": {
+      "target_type": "aoe",
+      "allies": [
+        {
+          "id": "ally_1",
+          "current_hp": 100,
+          "max_hp": 100
+        },
+        {
+          "id": "ally_2",
+          "current_hp": 1,
+          "max_hp": 100
+        }
+      ]
+    },
+    "expected": {
+      "targets": [
+        "ally_1",
+        "ally_2"
+      ]
+    },
+    "assertion": "광역은 조건 없이 전체 아군을 대상으로 함",
+    "implemented": false
+  },
+  {
+    "feature": "적 타겟팅",
+    "test_id": "combat-037",
+    "name": "상태이상 타겟: 해당 상태이상 없는 아군 우선",
+    "input": {
+      "target_type": "status_effect",
+      "effect_type": "bleed",
+      "allies": [
+        {
+          "id": "ally_1",
+          "statuses": [
+            "bleed"
+          ]
+        },
+        {
+          "id": "ally_2",
+          "statuses": []
+        },
+        {
+          "id": "ally_3",
+          "statuses": [
+            "burn"
+          ]
+        }
+      ]
+    },
+    "expected": {
+      "target": "ally_2"
+    },
+    "assertion": "ally_1은 이미 출혈, ally_2는 출혈 없음, ally_3은 출혈 없음 → HP비율 등 추가 기준 적용 가능하나 ally_2 우선",
+    "implemented": false
+  },
+  {
+    "feature": "런 종료 조건",
+    "test_id": "combat-038",
+    "name": "아군 전멸 시 런 종료, 해금 유지",
+    "input": {
+      "ally_all_dead": true,
+      "unlocked_characters": [
+        "char_a",
+        "char_b"
+      ],
+      "gold": 500,
+      "equipment": [
+        "sword"
+      ],
+      "artifacts": [
+        "ring"
+      ],
+      "potions": [
+        "hp_potion"
+      ]
+    },
+    "expected": {
+      "run_ended": true,
+      "unlocks_preserved": [
+        "char_a",
+        "char_b"
+      ],
+      "gold_lost": true,
+      "equipment_lost": true,
+      "artifacts_lost": true,
+      "potions_lost": true
+    },
+    "assertion": "런 종료 시 해금은 유지, 골드/장비/유물/물약은 소실",
+    "implemented": false
+  },
+  {
+    "feature": "전투 시간 목표",
+    "test_id": "combat-039",
+    "name": "일반 전투 시간 목표: 2~4턴",
+    "input": {
+      "enemy_type": "normal"
+    },
+    "expected": {
+      "target_turns": {
+        "min": 2,
+        "max": 4
+      }
+    },
+    "assertion": "일반 적 → 2~4턴 내 종료 설계 기대",
+    "implemented": false
+  },
+  {
+    "feature": "전투 시간 목표",
+    "test_id": "combat-040",
+    "name": "엘리트 전투 시간 목표: 4~6턴",
+    "input": {
+      "enemy_type": "elite"
+    },
+    "expected": {
+      "target_turns": {
+        "min": 4,
+        "max": 6
+      }
+    },
+    "assertion": "엘리트 적 → 4~6턴 내 종료 설계 기대",
+    "implemented": false
+  },
+  {
+    "feature": "전투 시간 목표",
+    "test_id": "combat-041",
+    "name": "보스 전투 시간 목표: 6~8턴",
+    "input": {
+      "enemy_type": "boss"
+    },
+    "expected": {
+      "target_turns": {
+        "min": 6,
+        "max": 8
+      }
+    },
+    "assertion": "보스 적 → 6~8턴 내 종료 설계 기대",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 출혈 중첩/갱신",
+    "test_id": "status-001",
+    "name": "출혈 신규 적용: 1스택, 3턴 지속",
+    "input": {
+      "current_bleed": null,
+      "apply_bleed": true,
+      "base_duration": 3
+    },
+    "expected": {
+      "bleed_stacks": 1,
+      "bleed_remaining_turns": 3
+    },
+    "assertion": "출혈 없음 → 신규 적용 → 1스택, 3턴",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 출혈 중첩/갱신",
+    "test_id": "status-002",
+    "name": "출혈 재적용: 중첩+1, 지속시간 갱신",
+    "input": {
+      "current_bleed_stacks": 2,
+      "current_bleed_remaining": 1,
+      "apply_bleed": true,
+      "base_duration": 3
+    },
+    "expected": {
+      "bleed_stacks": 3,
+      "bleed_remaining_turns": 3
+    },
+    "assertion": "2스택 → 재적용 → 3스택, 지속시간 3으로 갱신",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 출혈 중첩/갱신",
+    "test_id": "status-003",
+    "name": "출혈 최대 중첩(3) 시 중첩 불가, 지속시간만 갱신",
+    "input": {
+      "current_bleed_stacks": 3,
+      "current_bleed_remaining": 1,
+      "apply_bleed": true,
+      "base_duration": 3
+    },
+    "expected": {
+      "bleed_stacks": 3,
+      "bleed_remaining_turns": 3
+    },
+    "assertion": "이미 3스택(최대) → 중첩 불가, 지속시간만 3으로 갱신",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 출혈 지속 감소",
+    "test_id": "status-004",
+    "name": "출혈 턴 종료 후 지속시간 감소, 0이면 제거",
+    "input": {
+      "bleed_stacks": 2,
+      "bleed_remaining_turns": 1
+    },
+    "expected": {
+      "bleed_removed": true
+    },
+    "assertion": "남은 턴 1 → 감소 후 0 → 출혈 제거",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 화상 중첩/갱신",
+    "test_id": "status-005",
+    "name": "화상 신규 적용: 1스택, 3턴 지속",
+    "input": {
+      "current_burn": null,
+      "apply_burn": true,
+      "base_duration": 3
+    },
+    "expected": {
+      "burn_stacks": 1,
+      "burn_remaining_turns": 3
+    },
+    "assertion": "화상 없음 → 신규 적용 → 1스택, 3턴",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 화상 중첩/갱신",
+    "test_id": "status-006",
+    "name": "화상 재적용: 중첩+1, 지속시간 갱신",
+    "input": {
+      "current_burn_stacks": 1,
+      "current_burn_remaining": 2,
+      "apply_burn": true,
+      "base_duration": 3
+    },
+    "expected": {
+      "burn_stacks": 2,
+      "burn_remaining_turns": 3
+    },
+    "assertion": "1스택 → 재적용 → 2스택, 지속시간 3으로 갱신",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 화상 중첩/갱신",
+    "test_id": "status-007",
+    "name": "화상 최대 중첩(3) 시 중첩 불가, 지속시간만 갱신",
+    "input": {
+      "current_burn_stacks": 3,
+      "current_burn_remaining": 1,
+      "apply_burn": true,
+      "base_duration": 3
+    },
+    "expected": {
+      "burn_stacks": 3,
+      "burn_remaining_turns": 3
+    },
+    "assertion": "이미 3스택(최대) → 중첩 불가, 지속시간만 3으로 갱신",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 둔화",
+    "test_id": "status-008",
+    "name": "둔화 적용: 속도 -20%, 2턴 지속",
+    "input": {
+      "unit_speed": 100,
+      "current_slow": null,
+      "apply_slow": true,
+      "base_duration": 2
+    },
+    "expected": {
+      "effective_speed": 80,
+      "slow_remaining_turns": 2
+    },
+    "assertion": "100 × (1 - 0.20) = 80, 지속 2턴",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 둔화",
+    "test_id": "status-009",
+    "name": "둔화 재적용: 중첩 없이 지속시간만 갱신",
+    "input": {
+      "unit_speed": 100,
+      "current_slow_remaining": 1,
+      "apply_slow": true,
+      "base_duration": 2
+    },
+    "expected": {
+      "effective_speed": 80,
+      "slow_remaining_turns": 2,
+      "slow_stacks": 1
+    },
+    "assertion": "이미 둔화 상태 → 중첩 불가, 지속시간만 2로 갱신, 속도 감소량 변동 없음",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 약화",
+    "test_id": "status-010",
+    "name": "약화 적용: 공격력 -20%, 2턴 지속",
+    "input": {
+      "unit_atk": 100,
+      "current_weaken": null,
+      "apply_weaken": true,
+      "base_duration": 2
+    },
+    "expected": {
+      "effective_atk": 80,
+      "weaken_remaining_turns": 2
+    },
+    "assertion": "100 × (1 - 0.20) = 80, 지속 2턴",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 약화",
+    "test_id": "status-011",
+    "name": "약화 재적용: 중첩 없이 지속시간만 갱신",
+    "input": {
+      "unit_atk": 100,
+      "current_weaken_remaining": 1,
+      "apply_weaken": true,
+      "base_duration": 2
+    },
+    "expected": {
+      "effective_atk": 80,
+      "weaken_remaining_turns": 2
+    },
+    "assertion": "이미 약화 상태 → 중첩 불가, 지속시간만 2로 갱신",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 파쇄",
+    "test_id": "status-012",
+    "name": "파쇄 적용: 방어력 -25%, 2턴 지속",
+    "input": {
+      "unit_def": 100,
+      "current_shatter": null,
+      "apply_shatter": true,
+      "base_duration": 2
+    },
+    "expected": {
+      "effective_def": 75,
+      "shatter_remaining_turns": 2
+    },
+    "assertion": "100 × (1 - 0.25) = 75, 지속 2턴",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 파쇄",
+    "test_id": "status-013",
+    "name": "파쇄 재적용: 중첩 없이 지속시간만 갱신",
+    "input": {
+      "unit_def": 100,
+      "current_shatter_remaining": 1,
+      "apply_shatter": true,
+      "base_duration": 2
+    },
+    "expected": {
+      "effective_def": 75,
+      "shatter_remaining_turns": 2
+    },
+    "assertion": "이미 파쇄 상태 → 중첩 불가, 지속시간만 2로 갱신",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 파쇄",
+    "test_id": "status-014",
+    "name": "파쇄와 기본 피해 공식 연동",
+    "input": {
+      "attacker_atk": 100,
+      "skill_coefficient": 1.0,
+      "defender_base_def": 100,
+      "defender_shatter": true
+    },
+    "expected": {
+      "damage": 25
+    },
+    "assertion": "유효 방어력 = 100 × 0.75 = 75, 피해 = max(1, floor(100×1.0) - 75) = 25",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 기절",
+    "test_id": "status-015",
+    "name": "기절 적용: 행동불가, 1턴 지속",
+    "input": {
+      "apply_stun": true,
+      "base_duration": 1
+    },
+    "expected": {
+      "stun_remaining_turns": 1,
+      "action_blocked": true
+    },
+    "assertion": "기절 적용 → 1턴 동안 행동 불가",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 기절",
+    "test_id": "status-016",
+    "name": "기절 재적용: 중첩 없이 지속시간만 갱신 (1턴 고정)",
+    "input": {
+      "current_stun_remaining": 1,
+      "apply_stun": true,
+      "base_duration": 1
+    },
+    "expected": {
+      "stun_remaining_turns": 1
+    },
+    "assertion": "이미 기절 상태 → 중첩 불가, 지속시간 1로 갱신 (기본 1턴이므로 변동 없음)",
+    "implemented": false
+  },
+  {
+    "feature": "효과 적중/저항",
+    "test_id": "status-017",
+    "name": "기본 확률만으로 상태이상 적중",
+    "input": {
+      "base_chance": 0.8,
+      "effect_hit": 0,
+      "effect_resist": 0
+    },
+    "expected": {
+      "final_chance": 0.8
+    },
+    "assertion": "clamp(0.80 + 0 - 0, 0, 1) = 0.80",
+    "implemented": false
+  },
+  {
+    "feature": "효과 적중/저항",
+    "test_id": "status-018",
+    "name": "효과적중 보정으로 100% 적중",
+    "input": {
+      "base_chance": 0.8,
+      "effect_hit": 0.25,
+      "effect_resist": 0
+    },
+    "expected": {
+      "final_chance": 1.0
+    },
+    "assertion": "clamp(0.80 + 0.25 - 0, 0, 1) = clamp(1.05, 0, 1) = 1.00",
+    "implemented": false
+  },
+  {
+    "feature": "효과 적중/저항",
+    "test_id": "status-019",
+    "name": "효과저항으로 0% 적중 (완전 저항)",
+    "input": {
+      "base_chance": 0.8,
+      "effect_hit": 0,
+      "effect_resist": 0.8
+    },
+    "expected": {
+      "final_chance": 0.0
+    },
+    "assertion": "clamp(0.80 + 0 - 0.80, 0, 1) = clamp(0, 0, 1) = 0.00",
+    "implemented": false
+  },
+  {
+    "feature": "효과 적중/저항",
+    "test_id": "status-020",
+    "name": "효과저항 100%로 완전 면역",
+    "input": {
+      "base_chance": 1.0,
+      "effect_hit": 0,
+      "effect_resist": 1.0
+    },
+    "expected": {
+      "final_chance": 0.0
+    },
+    "assertion": "clamp(1.00 + 0 - 1.00, 0, 1) = clamp(0, 0, 1) = 0.00",
+    "implemented": false
+  },
+  {
+    "feature": "효과 적중/저항",
+    "test_id": "status-021",
+    "name": "clamp 하한: 음수 확률은 0% 보정",
+    "input": {
+      "base_chance": 0.3,
+      "effect_hit": 0,
+      "effect_resist": 0.8
+    },
+    "expected": {
+      "final_chance": 0.0
+    },
+    "assertion": "clamp(0.30 + 0 - 0.80, 0, 1) = clamp(-0.50, 0, 1) = 0.00",
+    "implemented": false
+  },
+  {
+    "feature": "효과 적중/저항",
+    "test_id": "status-022",
+    "name": "clamp 상한: 100% 초과는 100% 보정",
+    "input": {
+      "base_chance": 0.8,
+      "effect_hit": 0.5,
+      "effect_resist": 0
+    },
+    "expected": {
+      "final_chance": 1.0
+    },
+    "assertion": "clamp(0.80 + 0.50 - 0, 0, 1) = clamp(1.30, 0, 1) = 1.00",
+    "implemented": false
+  },
+  {
+    "feature": "효과 적중/저항",
+    "test_id": "status-023",
+    "name": "효과적중과 저항이 동시에 존재하는 중간 수치",
+    "input": {
+      "base_chance": 0.75,
+      "effect_hit": 0.2,
+      "effect_resist": 0.1
+    },
+    "expected": {
+      "final_chance": 0.85
+    },
+    "assertion": "clamp(0.75 + 0.20 - 0.10, 0, 1) = clamp(0.85, 0, 1) = 0.85",
+    "implemented": false
+  },
+  {
+    "feature": "보스 면역",
+    "test_id": "status-024",
+    "name": "보스 EnemyTable 면역 태그로 상태이상 무효화",
+    "input": {
+      "enemy_type": "boss",
+      "immune_tags": [
+        "bleed",
+        "burn",
+        "stun"
+      ],
+      "apply_status": "bleed"
+    },
+    "expected": {
+      "status_applied": false
+    },
+    "assertion": "보스 면역 태그에 출혈 포함 → 출혈 적용 무효",
+    "implemented": false
+  },
+  {
+    "feature": "보스 면역",
+    "test_id": "status-025",
+    "name": "보스 100% 효과저항으로 모든 상태이상 무효화",
+    "input": {
+      "enemy_type": "boss",
+      "effect_resist": 1.0,
+      "base_chance": 1.0,
+      "effect_hit": 0,
+      "apply_status": "stun"
+    },
+    "expected": {
+      "status_applied": false,
+      "final_chance": 0.0
+    },
+    "assertion": "clamp(1.00 + 0 - 1.00, 0, 1) = 0.00 → 적중 불가",
+    "implemented": false
+  },
+  {
+    "feature": "보스 면역",
+    "test_id": "status-026",
+    "name": "보스 면역 태그가 없는 상태이상은 정상 적용 가능",
+    "input": {
+      "enemy_type": "boss",
+      "immune_tags": [
+        "stun"
+      ],
+      "effect_resist": 0,
+      "base_chance": 0.8,
+      "effect_hit": 0,
+      "apply_status": "bleed"
+    },
+    "expected": {
+      "status_applied": true,
+      "final_chance": 0.8
+    },
+    "assertion": "면역 태그에 출혈 없음 + 저항 0% → 정상 적용 판정 (80% 확률)",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 복합 - 디버프 중첩 한계",
+    "test_id": "status-027",
+    "name": "둔화+약화+파쇄 동시 적용",
+    "input": {
+      "unit_base_speed": 100,
+      "unit_base_atk": 100,
+      "unit_base_def": 100,
+      "apply_slow": true,
+      "apply_weaken": true,
+      "apply_shatter": true
+    },
+    "expected": {
+      "effective_speed": 80,
+      "effective_atk": 80,
+      "effective_def": 75
+    },
+    "assertion": "속도: 100×0.8=80, 공격력: 100×0.8=80, 방어력: 100×0.75=75",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 복합 - 지속시간 만료",
+    "test_id": "status-028",
+    "name": "디버프 만료 시 스탯 원복",
+    "input": {
+      "unit_base_speed": 100,
+      "unit_base_atk": 100,
+      "unit_base_def": 100,
+      "slow_remaining_turns": 1,
+      "weaken_remaining_turns": 1,
+      "shatter_remaining_turns": 1
+    },
+    "expected": {
+      "after_tick": {
+        "speed": 100,
+        "atk": 100,
+        "def": 100,
+        "slow_removed": true,
+        "weaken_removed": true,
+        "shatter_removed": true
+      }
+    },
+    "assertion": "모든 디버프 1턴 남음 → 턴 시작 감소 → 0 → 만료 제거 → 스탯 원복",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 출혈 피해 소수점",
+    "test_id": "status-029",
+    "name": "출혈 피해 계산 시 소수점 내림",
+    "input": {
+      "unit_max_hp": 33,
+      "bleed_stacks": 1
+    },
+    "expected": {
+      "dot_damage": 1
+    },
+    "assertion": "floor(33 × 0.05 × 1) = floor(1.65) = 1",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 화상 피해 소수점",
+    "test_id": "status-030",
+    "name": "화상 피해 계산 시 소수점 내림",
+    "input": {
+      "unit_max_hp": 33,
+      "burn_stacks": 1
+    },
+    "expected": {
+      "dot_damage": 1
+    },
+    "assertion": "floor(33 × 0.06 × 1) = floor(1.98) = 1",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 출혈 최대 피해",
+    "test_id": "status-031",
+    "name": "출혈 3스택 최대 HP 1000 기준 피해",
+    "input": {
+      "unit_max_hp": 1000,
+      "bleed_stacks": 3
+    },
+    "expected": {
+      "dot_damage": 150
+    },
+    "assertion": "floor(1000 × 0.05 × 3) = floor(150) = 150 (최대 HP의 15%)",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 화상 최대 피해",
+    "test_id": "status-032",
+    "name": "화상 3스택 최대 HP 1000 기준 피해",
+    "input": {
+      "unit_max_hp": 1000,
+      "burn_stacks": 3
+    },
+    "expected": {
+      "dot_damage": 180
+    },
+    "assertion": "floor(1000 × 0.06 × 3) = floor(180) = 180 (최대 HP의 18%)",
+    "implemented": false
+  },
+  {
+    "feature": "상태이상 - 출혈+화상 동시 최대 피해",
+    "test_id": "status-033",
+    "name": "출혈 3스택 + 화상 3스택 동시 턴 종료 피해",
+    "input": {
+      "unit_max_hp": 1000,
+      "unit_current_hp": 700,
+      "bleed_stacks": 3,
+      "burn_stacks": 3
+    },
+    "expected": {
+      "total_dot_damage": 330,
+      "unit_current_hp_after": 370
+    },
+    "assertion": "출혈: floor(1000×0.05×3)=150 + 화상: floor(1000×0.06×3)=180 = 330, HP 700-370=370",
+    "implemented": false
+  },
+  {
+    "feature": "턴 구조 - 기절 해제 타이밍",
+    "test_id": "status-034",
+    "name": "기절 1턴 후 다음 턴에 정상 행동 가능",
+    "input": {
+      "turn_1": {
+        "stun_remaining": 1,
+        "action_blocked": true
+      },
+      "turn_2": {
+        "stun_remaining_after_start": 0,
+        "stun_removed": true,
+        "action_blocked": false
+      }
+    },
+    "expected": {
+      "turn_1_action": "skipped",
+      "turn_2_action": "normal"
+    },
+    "assertion": "턴1: 기절로 행동 스킵, 턴1 종료 또는 턴2 시작 시 기절 만료 제거, 턴2: 정상 행동",
+    "implemented": false
+  }
+]

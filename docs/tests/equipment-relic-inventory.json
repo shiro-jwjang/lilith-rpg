@@ -1,0 +1,1792 @@
+[
+  {
+    "feature": "장비 강화 비용",
+    "test_id": "equip-001",
+    "name": "일반 등급 장비 +1 강화 비용 검증",
+    "input": {
+      "equipment": "녹슨 검",
+      "grade": "일반",
+      "current_level": 0,
+      "target_level": 1,
+      "gold": 100
+    },
+    "expected": {
+      "cost": 20,
+      "gold_after": 80,
+      "success": true
+    },
+    "assertion": "gold_after == gold - 20 && cost == 20",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 비용",
+    "test_id": "equip-002",
+    "name": "고급 등급 장비 +1 강화 비용 검증",
+    "input": {
+      "equipment": "붉은 달 단도",
+      "grade": "고급",
+      "current_level": 0,
+      "target_level": 1,
+      "gold": 100
+    },
+    "expected": {
+      "cost": 35,
+      "gold_after": 65,
+      "success": true
+    },
+    "assertion": "gold_after == gold - 35 && cost == 35",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 비용",
+    "test_id": "equip-003",
+    "name": "일반 등급 장비 +2 강화 비용 검증",
+    "input": {
+      "equipment": "녹슨 검",
+      "grade": "일반",
+      "current_level": 1,
+      "target_level": 2,
+      "gold": 100
+    },
+    "expected": {
+      "cost": 35,
+      "gold_after": 65,
+      "success": true
+    },
+    "assertion": "gold_after == gold - 35 && cost == 35",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 비용",
+    "test_id": "equip-004",
+    "name": "고급 등급 장비 +2 강화 비용 검증",
+    "input": {
+      "equipment": "붉은 달 단도",
+      "grade": "고급",
+      "current_level": 1,
+      "target_level": 2,
+      "gold": 100
+    },
+    "expected": {
+      "cost": 55,
+      "gold_after": 45,
+      "success": true
+    },
+    "assertion": "gold_after == gold - 55 && cost == 55",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 비용",
+    "test_id": "equip-005",
+    "name": "희귀 등급 장비 +2 강화 비용 검증",
+    "input": {
+      "equipment": "희귀 장비",
+      "grade": "희귀",
+      "current_level": 1,
+      "target_level": 2,
+      "gold": 100
+    },
+    "expected": {
+      "cost": 80,
+      "gold_after": 20,
+      "success": true
+    },
+    "assertion": "gold_after == gold - 80 && cost == 80",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 비용",
+    "test_id": "equip-006",
+    "name": "일반 등급 장비 +3 강화 비용 검증",
+    "input": {
+      "equipment": "녹슨 검",
+      "grade": "일반",
+      "current_level": 2,
+      "target_level": 3,
+      "gold": 100
+    },
+    "expected": {
+      "cost": 60,
+      "gold_after": 40,
+      "success": true
+    },
+    "assertion": "gold_after == gold - 60 && cost == 60",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 비용",
+    "test_id": "equip-007",
+    "name": "고급 등급 장비 +3 강화 비용 검증",
+    "input": {
+      "equipment": "붉은 달 단도",
+      "grade": "고급",
+      "current_level": 2,
+      "target_level": 3,
+      "gold": 100
+    },
+    "expected": {
+      "cost": 90,
+      "gold_after": 10,
+      "success": true
+    },
+    "assertion": "gold_after == gold - 90 && cost == 90",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 비용",
+    "test_id": "equip-008",
+    "name": "희귀 등급 장비 +3 강화 비용 검증",
+    "input": {
+      "equipment": "희귀 장비",
+      "grade": "희귀",
+      "current_level": 2,
+      "target_level": 3,
+      "gold": 150
+    },
+    "expected": {
+      "cost": 120,
+      "gold_after": 30,
+      "success": true
+    },
+    "assertion": "gold_after == gold - 120 && cost == 120",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 비용",
+    "test_id": "equip-009",
+    "name": "골드 부족 시 강화 실패 (경계값: 비용보다 1 적음)",
+    "input": {
+      "equipment": "녹슨 검",
+      "grade": "일반",
+      "current_level": 0,
+      "target_level": 1,
+      "gold": 19
+    },
+    "expected": {
+      "cost": 20,
+      "gold_after": 19,
+      "success": false
+    },
+    "assertion": "success == false && gold_after == 19",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 비용",
+    "test_id": "equip-010",
+    "name": "골드 정확히 맞을 때 강화 성공 (경계값)",
+    "input": {
+      "equipment": "녹슨 검",
+      "grade": "일반",
+      "current_level": 0,
+      "target_level": 1,
+      "gold": 20
+    },
+    "expected": {
+      "cost": 20,
+      "gold_after": 0,
+      "success": true
+    },
+    "assertion": "success == true && gold_after == 0",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 비용",
+    "test_id": "equip-011",
+    "name": "최대 강화 레벨 +3 초과 시도 시 실패",
+    "input": {
+      "equipment": "녹슨 검",
+      "grade": "일반",
+      "current_level": 3,
+      "target_level": 4,
+      "gold": 999
+    },
+    "expected": {
+      "success": false,
+      "error": "MAX_LEVEL"
+    },
+    "assertion": "success == false",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 스탯 보정",
+    "test_id": "equip-012",
+    "name": "+1 강화 시 주옵션 10% 상승 (녹슨 검 공격력+4 → 4.4)",
+    "input": {
+      "equipment": "녹슨 검",
+      "level": 1,
+      "base_main_stat": 5
+    },
+    "expected": {
+      "main_stat_value": 5.5
+    },
+    "assertion": "main_stat_value == 5 * 1.10",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 스탯 보정",
+    "test_id": "equip-013",
+    "name": "+2 강화 시 주옵션 누계 20% 상승 (녹슨 검 공격력+4 → 4.8)",
+    "input": {
+      "equipment": "녹슨 검",
+      "level": 2,
+      "base_main_stat": 5
+    },
+    "expected": {
+      "main_stat_value": 6.0
+    },
+    "assertion": "main_stat_value == 5 * 1.20",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 스탯 보정",
+    "test_id": "equip-014",
+    "name": "+1 강화 시 퍼센트 주옵션 10% 상승 (치명타율+3% → 3.3%)",
+    "input": {
+      "equipment": "녹슨 검",
+      "level": 1,
+      "base_sub_stat": 3,
+      "stat_type": "percent"
+    },
+    "expected": {
+      "sub_stat_value": 3.3
+    },
+    "assertion": "sub_stat_value == 3 * 1.10",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 스탯 보정",
+    "test_id": "equip-015",
+    "name": "+2 강화 시 부옵션 강화 적용 (치명타율+3% 기준)",
+    "input": {
+      "equipment": "녹슨 검",
+      "level": 2,
+      "base_sub_stat": 3,
+      "stat_type": "percent"
+    },
+    "expected": {
+      "sub_stat_boosted": true,
+      "sub_stat_value": 3.6
+    },
+    "assertion": "sub_stat_boosted == true",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-016",
+    "name": "+3 강화 시 고유효과 개방 (녹슨 검: 기본 공격 계수 +0.1)",
+    "input": {
+      "equipment": "녹슨 검",
+      "level": 3
+    },
+    "expected": {
+      "unique_effect": "참격계수+0.1",
+      "unique_active": true,
+      "slash_coefficient_bonus": 0.1
+    },
+    "assertion": "unique_active == true && slash_coefficient_bonus == 0.1",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-017",
+    "name": "+2 강화 시 고유효과 미개방",
+    "input": {
+      "equipment": "녹슨 검",
+      "level": 2
+    },
+    "expected": {
+      "unique_active": false
+    },
+    "assertion": "unique_active == false",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-018",
+    "name": "+3 붉은 달 단도: 치명타 발생 시 출혈 1 부여",
+    "input": {
+      "equipment": "붉은 달 단도",
+      "level": 3,
+      "trigger": "critical_hit"
+    },
+    "expected": {
+      "unique_effect": "치명타시추가타격",
+      "additional_strike": true
+    },
+    "assertion": "additional_strike == true",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-019",
+    "name": "+3 균열 완드: 디버프 대상에게 피해 +10%",
+    "input": {
+      "equipment": "균열 완드",
+      "level": 3,
+      "debuff_duration": 3
+    },
+    "expected": {
+      "unique_effect": "상태이상지속+1턴",
+      "final_duration": 4
+    },
+    "assertion": "final_duration == debuff_duration + 1",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-020",
+    "name": "+3 견고한 흉갑: 피해 10% 감소 (방어형 보정)",
+    "input": {
+      "equipment": "견고한 흉갑",
+      "level": 3,
+      "incoming_damage": 100
+    },
+    "expected": {
+      "unique_effect": "피해10%감소1회",
+      "reduced_damage": 90,
+      "uses_remaining": 0
+    },
+    "assertion": "reduced_damage == 100 * 0.90 && uses_remaining == 0",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-021",
+    "name": "+3 견고한 흉갑: 2회째 피격 시 고유효과 미발동",
+    "input": {
+      "equipment": "견고한 흉갑",
+      "level": 3,
+      "incoming_damage": 100,
+      "already_used": true
+    },
+    "expected": {
+      "reduced_damage": 100,
+      "uses_remaining": 0
+    },
+    "assertion": "reduced_damage == 100",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-022",
+    "name": "+3 사냥견 가죽갑: 첫 턴 받는 피해 -5%",
+    "input": {
+      "equipment": "사냥견 가죽갑",
+      "level": 3,
+      "event": "dodge",
+      "current_mp": 20
+    },
+    "expected": {
+      "mp_after": 25,
+      "unique_effect": "회피시MP+5"
+    },
+    "assertion": "mp_after == 20 + 5",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-023",
+    "name": "+3 의식가 로브: 스킬 적중 시 MP +2",
+    "input": {
+      "equipment": "의식가 로브",
+      "level": 3,
+      "event": "hit",
+      "enemy_speed": 10
+    },
+    "expected": {
+      "unique_effect": "피격시20%둔화",
+      "enemy_speed_after": 8
+    },
+    "assertion": "enemy_speed_after == enemy_speed * 0.80",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-024",
+    "name": "+3 붉은 실 반지: 출혈 계열 성공률 +5%",
+    "input": {
+      "equipment": "붉은 실 반지",
+      "level": 3,
+      "event": "debuff_success",
+      "current_mp": 30
+    },
+    "expected": {
+      "mp_after": 33,
+      "unique_effect": "상태이상성공시MP+3"
+    },
+    "assertion": "mp_after == 30 + 3",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-025",
+    "name": "+3 달빛 부적: 첫 턴 속도 +2",
+    "input": {
+      "equipment": "달빛 부적",
+      "level": 3,
+      "event": "turn_start",
+      "rng_result": 0.08
+    },
+    "expected": {
+      "unique_effect": "턴시작10%추가행동",
+      "extra_action": false
+    },
+    "assertion": "extra_action == false && rng_result < 0.10",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-026",
+    "name": "+3 달빛 부적: 첫 턴 속도 +2 발동 (경계값)",
+    "input": {
+      "equipment": "달빛 부적",
+      "level": 3,
+      "event": "turn_start",
+      "rng_result": 0.1
+    },
+    "expected": {
+      "unique_effect": "턴시작10%추가행동",
+      "extra_action": true
+    },
+    "assertion": "extra_action == true && rng_result <= 0.10",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-027",
+    "name": "+3 파편 목걸이: HP 50% 이하 받는 피해 -8%",
+    "input": {
+      "equipment": "파편 목걸이",
+      "level": 3,
+      "debuff_on_self": 3
+    },
+    "expected": {
+      "unique_effect": "상태이상지속-1턴",
+      "final_duration": 2
+    },
+    "assertion": "final_duration == 3 - 1",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-028",
+    "name": "+3 봉인된 열쇠: 보물/이벤트 잠금 선택지 1회 해금",
+    "input": {
+      "equipment": "봉인된 열쇠",
+      "level": 3,
+      "event": "event_choice"
+    },
+    "expected": {
+      "unique_effect": "숨겨진선택지노출",
+      "hidden_choices_visible": true
+    },
+    "assertion": "hidden_choices_visible == true",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-029",
+    "name": "+3 잠든 종: 모닥불 회복 +10%, 이벤트 페널티 -20%",
+    "input": {
+      "equipment": "고요한 종",
+      "level": 3,
+      "campfire_heal_base": 50
+    },
+    "expected": {
+      "unique_effect": "모닥불회복+15%",
+      "campfire_heal_total": 57.5
+    },
+    "assertion": "campfire_heal_total == 50 * 1.15",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 고유효과",
+    "test_id": "equip-030",
+    "name": "+3 재의 조각: 화상 피해 +15%, 화상 부여 확률 +5%",
+    "input": {
+      "equipment": "재의 조각",
+      "level": 3,
+      "event": "battle_end",
+      "max_hp": 200,
+      "current_hp": 80
+    },
+    "expected": {
+      "unique_effect": "전투종료HP5%회복",
+      "heal_amount": 10,
+      "hp_after": 90
+    },
+    "assertion": "heal_amount == max_hp * 0.05 && hp_after == 80 + 10",
+    "implemented": false
+  },
+  {
+    "feature": "장비 기본 스탯",
+    "test_id": "equip-031",
+    "name": "녹슨 검 기본 스탯 검증 (무기/일반/공격력+4)",
+    "input": {
+      "equipment": "녹슨 검",
+      "level": 0
+    },
+    "expected": {
+      "type": "무기",
+      "grade": "일반",
+      "attack": 5,
+      "crit_rate": 3,
+      "slot": "무기",
+      "atk": 4
+    },
+    "assertion": "type == '무기' && grade == '일반' && attack == 5 && crit_rate == 3",
+    "implemented": false
+  },
+  {
+    "feature": "장비 기본 스탯",
+    "test_id": "equip-032",
+    "name": "붉은 달 단도 기본 스탯 검증 (무기/고급/공격력+3/속도+2/치명타율+5%)",
+    "input": {
+      "equipment": "붉은 달 단도",
+      "level": 0
+    },
+    "expected": {
+      "type": "무기",
+      "grade": "고급",
+      "attack": 8,
+      "crit_rate": 5,
+      "slot": "무기",
+      "atk": 3,
+      "spd": 2,
+      "crit": 0.05
+    },
+    "assertion": "type == '무기' && grade == '고급' && attack == 8 && crit_rate == 5",
+    "implemented": false
+  },
+  {
+    "feature": "장비 기본 스탯",
+    "test_id": "equip-033",
+    "name": "균열 완드 기본 스탯 검증 (무기/희귀/공격력+2/MP+4/효과적중+10%)",
+    "input": {
+      "equipment": "균열 완드",
+      "level": 0
+    },
+    "expected": {
+      "type": "무기",
+      "grade": "희귀",
+      "attack": 6,
+      "effect_hit": 0.1,
+      "slot": "무기",
+      "atk": 2,
+      "mp": 4
+    },
+    "assertion": "type == '무기' && grade == '고급' && attack == 6 && effect_hit == 8",
+    "implemented": false
+  },
+  {
+    "feature": "장비 기본 스탯",
+    "test_id": "equip-034",
+    "name": "견고한 흉갑 기본 스탯 검증 (방어구/일반/HP+18/방어력+3)",
+    "input": {
+      "equipment": "견고한 흉갑",
+      "level": 0
+    },
+    "expected": {
+      "type": "방어구",
+      "grade": "일반",
+      "hp": 18,
+      "defense": 3,
+      "slot": "방어구",
+      "def": 3
+    },
+    "assertion": "type == '방어구' && grade == '일반' && hp == 20 && defense == 3",
+    "implemented": false
+  },
+  {
+    "feature": "장비 기본 스탯",
+    "test_id": "equip-035",
+    "name": "사냥견 가죽갑 기본 스탯 검증 (방어구/고급/HP+12/방어력+2/속도+3)",
+    "input": {
+      "equipment": "사냥견 가죽갑",
+      "level": 0
+    },
+    "expected": {
+      "type": "방어구",
+      "grade": "고급",
+      "hp": 12,
+      "speed": 2,
+      "slot": "방어구",
+      "def": 2,
+      "spd": 3
+    },
+    "assertion": "type == '방어구' && grade == '일반' && hp == 15 && speed == 2",
+    "implemented": false
+  },
+  {
+    "feature": "장비 기본 스탯",
+    "test_id": "equip-036",
+    "name": "의식가 로브 기본 스탯 검증 (방어구/희귀/HP+10/방어력+1/효과적중+8%/효과저항+5%)",
+    "input": {
+      "equipment": "의식가 로브",
+      "level": 0
+    },
+    "expected": {
+      "type": "방어구",
+      "grade": "희귀",
+      "hp": 10,
+      "effect_resist": 0.05,
+      "slot": "방어구",
+      "def": 1,
+      "effect_hit": 0.08
+    },
+    "assertion": "type == '방어구' && grade == '고급' && hp == 25 && effect_resist == 5",
+    "implemented": false
+  },
+  {
+    "feature": "장비 기본 스탯",
+    "test_id": "equip-037",
+    "name": "붉은 실 반지 기본 스탯 검증 (장신구/일반/치명타율+4%/효과적중+4%)",
+    "input": {
+      "equipment": "붉은 실 반지",
+      "level": 0
+    },
+    "expected": {
+      "type": "액세서리",
+      "grade": "일반",
+      "effect_hit": 0.04,
+      "sub_stat": null,
+      "slot": "장신구",
+      "crit": 0.04
+    },
+    "assertion": "type == '액세서리' && grade == '일반' && effect_hit == 5 && sub_stat == null",
+    "implemented": false
+  },
+  {
+    "feature": "장비 기본 스탯",
+    "test_id": "equip-038",
+    "name": "달빛 부적 기본 스탯 검증 (장신구/고급/속도+4/효과저항+5%)",
+    "input": {
+      "equipment": "달빛 부적",
+      "level": 0
+    },
+    "expected": {
+      "type": "액세서리",
+      "grade": "고급",
+      "speed": 3,
+      "crit_rate": 4,
+      "slot": "장신구",
+      "spd": 4,
+      "effect_resist": 0.05
+    },
+    "assertion": "type == '액세서리' && grade == '고급' && speed == 3 && crit_rate == 4",
+    "implemented": false
+  },
+  {
+    "feature": "장비 기본 스탯",
+    "test_id": "equip-039",
+    "name": "파편 목걸이 기본 스탯 검증 (장신구/희귀/HP+14/치명타율+3%/효과적중+6%)",
+    "input": {
+      "equipment": "파편 목걸이",
+      "level": 0
+    },
+    "expected": {
+      "type": "액세서리",
+      "grade": "희귀",
+      "effect_resist": 5,
+      "sub_stat": null,
+      "slot": "장신구",
+      "hp": 14,
+      "crit": 0.03,
+      "effect_hit": 0.06
+    },
+    "assertion": "type == '액세서리' && grade == '일반' && effect_resist == 5 && sub_stat == null",
+    "implemented": false
+  },
+  {
+    "feature": "장비 기본 스탯",
+    "test_id": "equip-040",
+    "name": "봉인된 열쇠 기본 스탯 검증 (트링킷/일반/골드시작+15)",
+    "input": {
+      "equipment": "봉인된 열쇠",
+      "level": 0
+    },
+    "expected": {
+      "type": "트링킷",
+      "grade": "일반",
+      "event_bonus": true,
+      "sub_stat": null,
+      "slot": "트링킷",
+      "gold_start": 15
+    },
+    "assertion": "type == '트링킷' && grade == '일반' && event_bonus == true",
+    "implemented": false
+  },
+  {
+    "feature": "장비 기본 스탯",
+    "test_id": "equip-041",
+    "name": "잠든 종 기본 스탯 검증 (트링킷/고급/모닥불회복+10%)",
+    "input": {
+      "equipment": "고요한 종",
+      "level": 0
+    },
+    "expected": {
+      "type": "트링킷",
+      "grade": "고급",
+      "heal_efficiency": 10,
+      "sub_stat": null,
+      "slot": "트링킷",
+      "campfire_heal": 0.1
+    },
+    "assertion": "type == '트링킷' && grade == '고급' && heal_efficiency == 10",
+    "implemented": false
+  },
+  {
+    "feature": "장비 기본 스탯",
+    "test_id": "equip-042",
+    "name": "재의 조각 기본 스탯 검증 (트링킷/희귀/화상피해+15%/화상확률+5%)",
+    "input": {
+      "equipment": "재의 조각",
+      "level": 0
+    },
+    "expected": {
+      "type": "트링킷",
+      "grade": "희귀",
+      "run_bonus": true,
+      "sub_stat": null,
+      "slot": "트링킷",
+      "burn_damage": 0.15,
+      "burn_chance": 0.05
+    },
+    "assertion": "type == '트링킷' && grade == '일반' && run_bonus == true",
+    "implemented": false
+  },
+  {
+    "feature": "장비 장착 교체",
+    "test_id": "equip-043",
+    "name": "인벤토리에 여유 있을 때 장착 교체 정상 처리",
+    "input": {
+      "equipped": "녹슨 검",
+      "new_equipment": "붉은 달 단도",
+      "inventory_slots_used": 3,
+      "inventory_max": 6
+    },
+    "expected": {
+      "success": true,
+      "old_in_inventory": true,
+      "inventory_slots_used": 4
+    },
+    "assertion": "success == true && old_in_inventory == true && inventory_slots_used == 4",
+    "implemented": false
+  },
+  {
+    "feature": "장비 장착 교체",
+    "test_id": "equip-044",
+    "name": "인벤토리 꽉 찼을 때 장착 교체 시 기존 장비 폐기",
+    "input": {
+      "equipped": "녹슨 검",
+      "new_equipment": "붉은 달 단도",
+      "inventory_slots_used": 6,
+      "inventory_max": 6
+    },
+    "expected": {
+      "success": true,
+      "old_in_inventory": false,
+      "old_discarded": true,
+      "inventory_slots_used": 6
+    },
+    "assertion": "success == true && old_discarded == true && inventory_slots_used == 6",
+    "implemented": false
+  },
+  {
+    "feature": "장비 인벤토리",
+    "test_id": "equip-045",
+    "name": "장비 인벤토리 최대 6칸 경계값 테스트",
+    "input": {
+      "inventory_slots_used": 5,
+      "add_item": true
+    },
+    "expected": {
+      "success": true,
+      "inventory_slots_used": 6
+    },
+    "assertion": "success == true && inventory_slots_used == 6",
+    "implemented": false
+  },
+  {
+    "feature": "장비 인벤토리",
+    "test_id": "equip-046",
+    "name": "장비 인벤토리 6칸 초과 시 추가 불가",
+    "input": {
+      "inventory_slots_used": 6,
+      "add_item": true
+    },
+    "expected": {
+      "success": false,
+      "inventory_slots_used": 6
+    },
+    "assertion": "success == false",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 비용 총합",
+    "test_id": "equip-047",
+    "name": "일반 등급 0→+3 총비용 = 20+35+60 = 115",
+    "input": {
+      "grade": "일반",
+      "target_level": 3,
+      "gold": 115
+    },
+    "expected": {
+      "total_cost": 115,
+      "gold_after": 0,
+      "final_level": 3
+    },
+    "assertion": "total_cost == 20 + 35 + 60 && gold_after == 0",
+    "implemented": false
+  },
+  {
+    "feature": "장비 강화 비용 총합",
+    "test_id": "equip-048",
+    "name": "고급 등급 0→+3 총비용 = 35+55+90 = 180",
+    "input": {
+      "grade": "고급",
+      "target_level": 3,
+      "gold": 180
+    },
+    "expected": {
+      "total_cost": 180,
+      "gold_after": 0,
+      "final_level": 3
+    },
+    "assertion": "total_cost == 35 + 55 + 90 && gold_after == 0",
+    "implemented": false
+  },
+  {
+    "feature": "유물 획득",
+    "test_id": "relic-001",
+    "name": "유물 인벤토리 여유 시 정상 획득",
+    "input": {
+      "relic": "붉은 달의 파편",
+      "inventory_slots_used": 2,
+      "inventory_max": 4
+    },
+    "expected": {
+      "success": true,
+      "inventory_slots_used": 3
+    },
+    "assertion": "success == true && inventory_slots_used == 3",
+    "implemented": false
+  },
+  {
+    "feature": "유물 획득",
+    "test_id": "relic-002",
+    "name": "유물 인벤토리 경계값: 3칸 사용 중 4번째 추가 성공",
+    "input": {
+      "relic": "녹슨 방패편",
+      "inventory_slots_used": 3,
+      "inventory_max": 4
+    },
+    "expected": {
+      "success": true,
+      "inventory_slots_used": 4
+    },
+    "assertion": "success == true && inventory_slots_used == 4",
+    "implemented": false
+  },
+  {
+    "feature": "유물 획득",
+    "test_id": "relic-003",
+    "name": "유물 인벤토리 4칸 초과 시 폐기",
+    "input": {
+      "relic": "사냥개의 이빨",
+      "inventory_slots_used": 4,
+      "inventory_max": 4
+    },
+    "expected": {
+      "success": false,
+      "discarded": true,
+      "inventory_slots_used": 4
+    },
+    "assertion": "success == false && discarded == true && inventory_slots_used == 4",
+    "implemented": false
+  },
+  {
+    "feature": "유물 획득",
+    "test_id": "relic-004",
+    "name": "동일 유물 중복 획득 시 처리 (스펙 미명시 → 보유 중이면 폐기)",
+    "input": {
+      "relic": "붉은 달의 파편",
+      "already_owned": true,
+      "inventory_slots_used": 2
+    },
+    "expected": {
+      "success": false,
+      "reason": "already_owned"
+    },
+    "assertion": "success == false",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 붉은 달의 파편",
+    "test_id": "relic-005",
+    "name": "붉은 달의 파편: 첫 치명타 시 추가 피해 발동 (1회만)",
+    "input": {
+      "relic": "붉은 달의 파편",
+      "base_damage": 100,
+      "trigger": "first_critical",
+      "additional_damage": 30
+    },
+    "expected": {
+      "final_damage": 130,
+      "uses_remaining": 0
+    },
+    "assertion": "final_damage == base_damage + additional_damage && uses_remaining == 0",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 붉은 달의 파편",
+    "test_id": "relic-006",
+    "name": "붉은 달의 파편: 2회째 치명타 시 추가 피해 미발동",
+    "input": {
+      "relic": "붉은 달의 파편",
+      "base_damage": 100,
+      "trigger": "second_critical",
+      "already_used": true
+    },
+    "expected": {
+      "final_damage": 100,
+      "additional_damage_applied": false
+    },
+    "assertion": "final_damage == base_damage && additional_damage_applied == false",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 붉은 달의 파편",
+    "test_id": "relic-007",
+    "name": "붉은 달의 파편: 일반 타격 시 미발동",
+    "input": {
+      "relic": "붉은 달의 파편",
+      "base_damage": 100,
+      "trigger": "normal_hit"
+    },
+    "expected": {
+      "final_damage": 100,
+      "additional_damage_applied": false,
+      "uses_remaining": 1,
+      "mp": 5
+    },
+    "assertion": "final_damage == base_damage && uses_remaining == 1",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 붉은 달의 파편",
+    "test_id": "relic-008",
+    "name": "붉은 달의 파편: 추가 피해는 최종 피해에 곱연산 (*1.25)",
+    "input": {
+      "relic": "붉은 달의 파편",
+      "base_damage": 50,
+      "defense_reduction": 0.8,
+      "trigger": "first_critical",
+      "additional_damage": 15
+    },
+    "expected": {
+      "final_damage": 55,
+      "damage": 62
+    },
+    "assertion": "final_damage == (base_damage * defense_reduction) + additional_damage",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 녹슨 방패편",
+    "test_id": "relic-009",
+    "name": "녹슨 방패편: 방어 후 방어력 일시 상승",
+    "input": {
+      "relic": "녹슨 방패편",
+      "event": "defend",
+      "base_defense": 10,
+      "defense_bonus": 5
+    },
+    "expected": {
+      "defense_temporarily": 15,
+      "duration": "next_turn"
+    },
+    "assertion": "defense_temporarily == base_defense + defense_bonus",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 녹슨 방패편",
+    "test_id": "relic-010",
+    "name": "녹슨 방패편: 패널티 없음 (spec에 패널티 미정의)",
+    "input": {
+      "relic": "녹슨 방패편",
+      "penalty": null
+    },
+    "expected": {
+      "has_penalty": false
+    },
+    "assertion": "has_penalty == false",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 사냥개의 이빨",
+    "test_id": "relic-011",
+    "name": "사냥개의 이빨: 출혈 수치 강화 적용",
+    "input": {
+      "relic": "사냥개의 이빨",
+      "base_bleed": 10,
+      "bleed_multiplier": 1.25
+    },
+    "expected": {
+      "bleed_damage": 12.5
+    },
+    "assertion": "bleed_damage == base_bleed * bleed_multiplier",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 사냥개의 이빨",
+    "test_id": "relic-012",
+    "name": "사냥개의 이빨: 패널티 없음 (spec에 패널티 미정의)",
+    "input": {
+      "relic": "사냥개의 이빨",
+      "base_attack": 100
+    },
+    "expected": {
+      "effective_attack": 97
+    },
+    "assertion": "effective_attack == base_attack * 0.97",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 재의 잔향",
+    "test_id": "relic-013",
+    "name": "재의 잔향: 화상 부여율 보정",
+    "input": {
+      "relic": "재의 잔향",
+      "base_burn_chance": 20,
+      "burn_bonus": 10
+    },
+    "expected": {
+      "burn_chance": 30
+    },
+    "assertion": "burn_chance == base_burn_chance + burn_bonus",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 재의 잔향",
+    "test_id": "relic-014",
+    "name": "재의 잔향: 패널티 없음 (spec에 패널티 미정의)",
+    "input": {
+      "relic": "재의 잔향",
+      "base_max_mp": 50
+    },
+    "expected": {
+      "effective_max_mp": 45
+    },
+    "assertion": "effective_max_mp == base_max_mp - 5",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 균열의 실",
+    "test_id": "relic-015",
+    "name": "균열의 실: 둔화파쇄 성공률 보정",
+    "input": {
+      "relic": "균열의 실",
+      "base_shatter_chance": 15,
+      "shatter_bonus": 10
+    },
+    "expected": {
+      "shatter_chance": 25
+    },
+    "assertion": "shatter_chance == base_shatter_chance + shatter_bonus",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 균열의 실",
+    "test_id": "relic-016",
+    "name": "균열의 실: 패널티 없음 (spec에 패널티 미정의)",
+    "input": {
+      "relic": "균열의 실",
+      "base_attack": 50
+    },
+    "expected": {
+      "effective_attack": 48
+    },
+    "assertion": "effective_attack == base_attack - 2",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 고요한 종 (유물)",
+    "test_id": "relic-017",
+    "name": "고요한 종 유물: 이벤트 페널티 감소 (손실 계산 후 감소율 적용)",
+    "input": {
+      "relic": "고요한 종",
+      "event_penalty_gold_loss": 30,
+      "penalty_reduction_rate": 0.25
+    },
+    "expected": {
+      "actual_gold_loss": 22.5
+    },
+    "assertion": "actual_gold_loss == 30 * (1 - 0.25)",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 고요한 종 (유물)",
+    "test_id": "relic-018",
+    "name": "고요한 종 유물: 회복 효율 증가 (치유량 곱연산)",
+    "input": {
+      "relic": "고요한 종",
+      "base_heal": 40,
+      "heal_efficiency_bonus": 0.15
+    },
+    "expected": {
+      "final_heal": 46
+    },
+    "assertion": "final_heal == base_heal * (1 + heal_efficiency_bonus)",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 고요한 종 (유물)",
+    "test_id": "relic-019",
+    "name": "고요한 종 유물: 패널티 없음 (spec에 패널티 미정의)",
+    "input": {
+      "relic": "고요한 종",
+      "gold_earned": 100
+    },
+    "expected": {
+      "actual_gold": 90
+    },
+    "assertion": "actual_gold == gold_earned * 0.90",
+    "implemented": false
+  },
+  {
+    "feature": "유물: 고요한 종 (유물)",
+    "test_id": "relic-020",
+    "name": "고요한 종 유물: 회복 효율 곱연산 — 다른 버프와 중첩 시",
+    "input": {
+      "relic": "고요한 종",
+      "base_heal": 50,
+      "other_buff_multiplier": 1.2,
+      "relic_heal_bonus": 0.15
+    },
+    "expected": {
+      "final_heal": 69
+    },
+    "assertion": "final_heal == base_heal * 1.2 * (1 + 0.15)",
+    "implemented": false
+  },
+  {
+    "feature": "유물 런 보정",
+    "test_id": "relic-021",
+    "name": "유물 효과는 현재 런에만 적용 (런 종료 후 리셋)",
+    "input": {
+      "run_end": true,
+      "relics_active": [
+        "사냥개의 이빨",
+        "균열의 실"
+      ]
+    },
+    "expected": {
+      "relics_active_next_run": false,
+      "relics_cleared": true
+    },
+    "assertion": "relics_active_next_run == false && relics_cleared == true",
+    "implemented": false
+  },
+  {
+    "feature": "유물 패널티 누적",
+    "test_id": "relic-022",
+    "name": "다중 유물 패널티 동시 적용 (사냥개의 이빨 + 균열의 실)",
+    "input": {
+      "relics": [
+        "사냥개의 이빨",
+        "균열의 실"
+      ],
+      "base_attack": 100
+    },
+    "expected": {
+      "effective_attack": 95
+    },
+    "assertion": "SKIPPED - no penalties defined in spec",
+    "implemented": false,
+    "description": "REMOVED: spec.md does not define relic penalties"
+  },
+  {
+    "feature": "유물 패널티 누적",
+    "test_id": "relic-023",
+    "name": "다중 유물 패널티: 고요한 종 골드 -10% + 이벤트 페널티 감소 동시 적용",
+    "input": {
+      "relic": "고요한 종",
+      "event_penalty_gold_loss": 50,
+      "penalty_reduction_rate": 0.25,
+      "gold_earned": 200
+    },
+    "expected": {
+      "actual_gold_loss": 37.5,
+      "actual_gold_earned": 180
+    },
+    "assertion": "SKIPPED - no penalties defined in spec",
+    "implemented": false,
+    "description": "REMOVED: spec.md does not define relic penalties"
+  },
+  {
+    "feature": "유물 추가 피해 후연산",
+    "test_id": "relic-024",
+    "name": "추가 피해 발동 시 최종 피해 증가 (방어력 적용 후 곱연산 *1.25)",
+    "input": {
+      "base_damage": 80,
+      "enemy_defense_factor": 0.7,
+      "additional_damage": 25,
+      "trigger": "first_critical"
+    },
+    "expected": {
+      "final_damage": 81
+    },
+    "assertion": "final_damage == (base_damage * enemy_defense_factor) + additional_damage",
+    "implemented": false
+  },
+  {
+    "feature": "인벤토리 장비 슬롯",
+    "test_id": "inventory-001",
+    "name": "장비 인벤토리 6칸 정상 추가",
+    "input": {
+      "type": "equipment",
+      "current_count": 0,
+      "add_count": 1
+    },
+    "expected": {
+      "success": true,
+      "count": 1
+    },
+    "assertion": "success == true && count == 1",
+    "implemented": false
+  },
+  {
+    "feature": "인벤토리 장비 슬롯",
+    "test_id": "inventory-002",
+    "name": "장비 인벤토리 6칸 꽉 참 (경계값)",
+    "input": {
+      "type": "equipment",
+      "current_count": 6,
+      "add_count": 1
+    },
+    "expected": {
+      "success": false,
+      "count": 6
+    },
+    "assertion": "success == false && count == 6",
+    "implemented": false
+  },
+  {
+    "feature": "인벤토리 장비 슬롯",
+    "test_id": "inventory-003",
+    "name": "장비 인벤토리 5칸에서 6칸으로 추가 성공 (경계값)",
+    "input": {
+      "type": "equipment",
+      "current_count": 5,
+      "add_count": 1
+    },
+    "expected": {
+      "success": true,
+      "count": 6
+    },
+    "assertion": "success == true && count == 6",
+    "implemented": false
+  },
+  {
+    "feature": "인벤토리 유물 슬롯",
+    "test_id": "inventory-004",
+    "name": "유물 인벤토리 4칸 정상 추가",
+    "input": {
+      "type": "relic",
+      "current_count": 0,
+      "add_count": 1
+    },
+    "expected": {
+      "success": true,
+      "count": 1
+    },
+    "assertion": "success == true && count == 1",
+    "implemented": false
+  },
+  {
+    "feature": "인벤토리 유물 슬롯",
+    "test_id": "inventory-005",
+    "name": "유물 인벤토리 4칸 꽉 참 (경계값)",
+    "input": {
+      "type": "relic",
+      "current_count": 4,
+      "add_count": 1
+    },
+    "expected": {
+      "success": false,
+      "count": 4
+    },
+    "assertion": "success == false && count == 4",
+    "implemented": false
+  },
+  {
+    "feature": "인벤토리 유물 슬롯",
+    "test_id": "inventory-006",
+    "name": "유물 인벤토리 3칸에서 4칸으로 추가 성공 (경계값)",
+    "input": {
+      "type": "relic",
+      "current_count": 3,
+      "add_count": 1
+    },
+    "expected": {
+      "success": true,
+      "count": 4
+    },
+    "assertion": "success == true && count == 4",
+    "implemented": false
+  },
+  {
+    "feature": "인벤토리 장착 교체",
+    "test_id": "inventory-007",
+    "name": "장착 교체 시 장비 인벤토리 꽉 차면 기존 장비 폐기",
+    "input": {
+      "equipped": "녹슨 검",
+      "new_equipment": "붉은 달 단도",
+      "equipment_inventory_full": true
+    },
+    "expected": {
+      "swap_success": true,
+      "old_discarded": true
+    },
+    "assertion": "swap_success == true && old_discarded == true",
+    "implemented": false
+  },
+  {
+    "feature": "인벤토리 장착 교체",
+    "test_id": "inventory-008",
+    "name": "장착 교체 시 장비 인벤토리 여유 있으면 기존 장비 보관",
+    "input": {
+      "equipped": "녹슨 검",
+      "new_equipment": "붉은 달 단도",
+      "equipment_inventory_full": false
+    },
+    "expected": {
+      "swap_success": true,
+      "old_stored": true,
+      "old_discarded": false
+    },
+    "assertion": "swap_success == true && old_stored == true && old_discarded == false",
+    "implemented": false
+  },
+  {
+    "feature": "물약 구매",
+    "test_id": "inventory-009",
+    "name": "소형 치료 물약",
+    "input": {
+      "potion": "작은 체력",
+      "gold": 50,
+      "potion_count": 0
+    },
+    "expected": {
+      "cost": 15,
+      "gold_after": 35,
+      "potion_count": 1,
+      "heal_amount": 30,
+      "hp": 35
+    },
+    "assertion": "cost == 15 && gold_after == 35 && potion_count == 1 && heal_amount == 30",
+    "implemented": false
+  },
+  {
+    "feature": "물약 구매",
+    "test_id": "inventory-010",
+    "name": "소형 마나 물약",
+    "input": {
+      "potion": "중형 체력",
+      "gold": 50,
+      "potion_count": 0
+    },
+    "expected": {
+      "cost": 20,
+      "gold_after": 25,
+      "potion_count": 1,
+      "heal_amount": 60,
+      "mp": 20
+    },
+    "assertion": "cost == 25 && gold_after == 25 && heal_amount == 60",
+    "implemented": false
+  },
+  {
+    "feature": "물약 구매",
+    "test_id": "inventory-011",
+    "name": "정화 물약",
+    "input": {
+      "potion": "작은 마나",
+      "gold": 50,
+      "potion_count": 0
+    },
+    "expected": {
+      "cost": 20,
+      "gold_after": 32,
+      "potion_count": 1,
+      "mana_amount": 15,
+      "debuff_remove": 1,
+      "hp": 10
+    },
+    "assertion": "cost == 18 && gold_after == 32 && mana_amount == 15",
+    "implemented": false
+  },
+  {
+    "feature": "물약 구매",
+    "test_id": "inventory-012",
+    "name": "전투 집중 물약",
+    "input": {
+      "potion": "중형 마나",
+      "gold": 50,
+      "potion_count": 0
+    },
+    "expected": {
+      "cost": 25,
+      "gold_after": 28,
+      "potion_count": 1,
+      "mana_amount": 25,
+      "crit": 0.1,
+      "effect_hit": 0.1,
+      "duration": 2
+    },
+    "assertion": "cost == 22 && gold_after == 28 && mana_amount == 25",
+    "implemented": false
+  },
+  {
+    "feature": "물약 구매",
+    "test_id": "inventory-013",
+    "name": "REMOVED: 해독제 (spec에 없음)",
+    "input": {
+      "potion": "해독제",
+      "gold": 50,
+      "potion_count": 0
+    },
+    "expected": {
+      "cost": 20,
+      "gold_after": 30,
+      "potion_count": 1,
+      "effect": "상태이상1종제거"
+    },
+    "assertion": "SKIPPED - potion removed from spec",
+    "implemented": false,
+    "description": "REMOVED: spec.md defines only 4 potion types"
+  },
+  {
+    "feature": "물약 구매",
+    "test_id": "inventory-014",
+    "name": "REMOVED: 전투 자극제 (spec에 없음)",
+    "input": {
+      "potion": "전투 자극제",
+      "gold": 50,
+      "potion_count": 0
+    },
+    "expected": {
+      "cost": 25,
+      "gold_after": 25,
+      "potion_count": 1,
+      "effect": "2턴공격력+15%",
+      "uses": 1
+    },
+    "assertion": "SKIPPED - potion removed from spec",
+    "implemented": false,
+    "description": "REMOVED: spec.md defines only 4 potion types"
+  },
+  {
+    "feature": "물약 중첩",
+    "test_id": "inventory-015",
+    "name": "동종 물약 5개까지 중첩 가능",
+    "input": {
+      "potion": "작은 체력",
+      "current_count": 4,
+      "add_count": 1
+    },
+    "expected": {
+      "success": true,
+      "total_count": 5
+    },
+    "assertion": "success == true && total_count == 5",
+    "implemented": false
+  },
+  {
+    "feature": "물약 중첩",
+    "test_id": "inventory-016",
+    "name": "동종 물약 5개 초과 시 구매 불가 (경계값)",
+    "input": {
+      "potion": "작은 체력",
+      "current_count": 5,
+      "add_count": 1
+    },
+    "expected": {
+      "success": false,
+      "total_count": 5
+    },
+    "assertion": "success == false && total_count == 5",
+    "implemented": false
+  },
+  {
+    "feature": "물약 중첩",
+    "test_id": "inventory-017",
+    "name": "이종 물약은 각각 독립 카운트",
+    "input": {
+      "potions": {
+        "작은 체력": 5,
+        "중형 체력": 3,
+        "작은 마나": 2
+      },
+      "add": "해독제"
+    },
+    "expected": {
+      "success": true,
+      "potions": {
+        "작은 체력": 5,
+        "중형 체력": 3,
+        "작은 마나": 2,
+        "해독제": 1
+      }
+    },
+    "assertion": "success == true && potions['작은 체력'] == 5 && potions['해독제'] == 1",
+    "implemented": false
+  },
+  {
+    "feature": "물약 사용",
+    "test_id": "inventory-018",
+    "name": "소형 치료 물약 사용: HP 35 회복 (최대 HP 초과 불가)",
+    "input": {
+      "potion": "작은 체력",
+      "current_hp": 90,
+      "max_hp": 100,
+      "count": 3
+    },
+    "expected": {
+      "hp_after": 100,
+      "count": 2,
+      "healed": 10,
+      "hp": 35
+    },
+    "assertion": "hp_after == 100 && count == 2 && healed == 10",
+    "implemented": false
+  },
+  {
+    "feature": "물약 사용",
+    "test_id": "inventory-019",
+    "name": "중형 체력 물약 사용: HP 60 회복 (여유 있을 때 전량 회복)",
+    "input": {
+      "potion": "중형 체력",
+      "current_hp": 30,
+      "max_hp": 100,
+      "count": 2
+    },
+    "expected": {
+      "hp_after": 90,
+      "count": 1,
+      "healed": 60
+    },
+    "assertion": "SKIPPED - potion removed from spec",
+    "implemented": false,
+    "description": "REMOVED: spec.md defines only 4 potion types"
+  },
+  {
+    "feature": "물약 사용",
+    "test_id": "inventory-020",
+    "name": "소형 마나 물약 사용: MP 20 회복 (최대 MP 초과 불가)",
+    "input": {
+      "potion": "작은 마나",
+      "current_mp": 10,
+      "max_mp": 50,
+      "count": 1
+    },
+    "expected": {
+      "mp_after": 25,
+      "count": 0,
+      "restored": 15,
+      "mp": 20
+    },
+    "assertion": "mp_after == 25 && count == 0 && restored == 15",
+    "implemented": false
+  },
+  {
+    "feature": "물약 사용",
+    "test_id": "inventory-021",
+    "name": "중형 마나 물약 사용: MP 25 회복 (최대 MP 초과 불가)",
+    "input": {
+      "potion": "중형 마나",
+      "current_mp": 40,
+      "max_mp": 50,
+      "count": 1
+    },
+    "expected": {
+      "mp_after": 50,
+      "count": 0,
+      "restored": 10
+    },
+    "assertion": "SKIPPED - potion removed from spec",
+    "implemented": false,
+    "description": "REMOVED: spec.md defines only 4 potion types"
+  },
+  {
+    "feature": "물약 사용",
+    "test_id": "inventory-022",
+    "name": "정화 물약 사용: 상태이상 1종 제거 + HP +10",
+    "input": {
+      "potion": "해독제",
+      "active_debuffs": [
+        "독",
+        "화상",
+        "둔화"
+      ],
+      "count": 1
+    },
+    "expected": {
+      "debuffs_removed": 1,
+      "remaining_debuffs": [
+        "화상",
+        "둔화"
+      ],
+      "count": 0,
+      "debuff_remove": 1,
+      "hp": 10
+    },
+    "assertion": "debuffs_removed == 1 && remaining_debuffs.length == 2 && count == 0",
+    "implemented": false
+  },
+  {
+    "feature": "물약 사용",
+    "test_id": "inventory-023",
+    "name": "정화 물약 사용: 상태이상 없을 때 사용 불가 또는 무효",
+    "input": {
+      "potion": "해독제",
+      "active_debuffs": [],
+      "count": 1
+    },
+    "expected": {
+      "success": false,
+      "count": 1,
+      "debuff_remove": 0
+    },
+    "assertion": "success == false && count == 1",
+    "implemented": false
+  },
+  {
+    "feature": "물약 사용",
+    "test_id": "inventory-024",
+    "name": "전투 집중 물약 사용: 2턴 치명타율+10%/효과적중+10%",
+    "input": {
+      "potion": "전투 자극제",
+      "base_attack": 50,
+      "count": 1
+    },
+    "expected": {
+      "buffed_attack": 57.5,
+      "duration": 2,
+      "count": 0,
+      "one_time_used": true,
+      "crit": 0.1,
+      "effect_hit": 0.1
+    },
+    "assertion": "buffed_attack == 50 * 1.15 && duration == 2 && count == 0",
+    "implemented": false
+  },
+  {
+    "feature": "물약 사용",
+    "test_id": "inventory-025",
+    "name": "전투 집중 물약 버프 지속 후 만료 (2턴 경과)",
+    "input": {
+      "potion": "전투 자극제",
+      "buffed_attack": 57.5,
+      "base_attack": 50,
+      "turns_elapsed": 2
+    },
+    "expected": {
+      "attack_after": 50,
+      "buff_active": false,
+      "duration": 2
+    },
+    "assertion": "attack_after == base_attack && buff_active == false",
+    "implemented": false
+  },
+  {
+    "feature": "물약 구매",
+    "test_id": "inventory-026",
+    "name": "골드 부족 시 물약 구매 실패 (경계값: 비용보다 1 적음)",
+    "input": {
+      "potion": "작은 체력",
+      "gold": 14
+    },
+    "expected": {
+      "success": false,
+      "gold_after": 14
+    },
+    "assertion": "success == false && gold_after == 14",
+    "implemented": false
+  },
+  {
+    "feature": "물약 구매",
+    "test_id": "inventory-027",
+    "name": "골드 정확히 맞을 때 물약 구매 성공 (경계값)",
+    "input": {
+      "potion": "작은 체력",
+      "gold": 15
+    },
+    "expected": {
+      "success": true,
+      "gold_after": 0
+    },
+    "assertion": "success == true && gold_after == 0",
+    "implemented": false
+  },
+  {
+    "feature": "물약 사용",
+    "test_id": "inventory-028",
+    "name": "물약 0개일 때 사용 불가",
+    "input": {
+      "potion": "작은 체력",
+      "count": 0
+    },
+    "expected": {
+      "success": false
+    },
+    "assertion": "success == false",
+    "implemented": false
+  },
+  {
+    "feature": "인벤토리 종합",
+    "test_id": "inventory-029",
+    "name": "전체 인벤토리 상태 확인 (장비 6칸 + 유물 4칸 + 물약 4종×5개)",
+    "input": {
+      "equipment_count": 6,
+      "relic_count": 4,
+      "potions": {
+        "작은 체력": 5,
+        "중형 체력": 5,
+        "작은 마나": 5,
+        "중형 마나": 5,
+        "해독제": 5,
+        "전투 자극제": 5
+      }
+    },
+    "expected": {
+      "equipment_full": true,
+      "relic_full": true,
+      "all_potions_maxed": true
+    },
+    "assertion": "equipment_full == true && relic_full == true && all_potions_maxed == true",
+    "implemented": false
+  },
+  {
+    "feature": "인벤토리 종합",
+    "test_id": "inventory-030",
+    "name": "런 종료 시 인벤토리 초기화 (유물만 리셋, 장비/물약 유지 확인)",
+    "input": {
+      "run_end": true,
+      "equipment_count": 4,
+      "relic_count": 3,
+      "potion_counts": {
+        "작은 체력": 2
+      }
+    },
+    "expected": {
+      "equipment_count_after": 4,
+      "relic_count_after": 0,
+      "potion_counts_after": {
+        "작은 체력": 2
+      }
+    },
+    "assertion": "equipment_count_after == 4 && relic_count_after == 0",
+    "implemented": false
+  }
+]
