@@ -7,6 +7,7 @@ var status_label: RichTextLabel = null
 var runner = null
 var _current_state: String = "idle"
 var _last_battle_type: String = ""
+var _battle_intro_shown: bool = false
 
 
 func _ready() -> void:
@@ -107,36 +108,38 @@ func _on_battle_state(state: Dictionary) -> void:
 
 	_update_party_status(allies)
 
-	if _last_battle_type == "boss":
-		append_text("")
-		append_text("[color=red][b]═══ BOSS ═══[/b][/color]")
-	elif _last_battle_type == "elite":
-		append_text("")
-		append_text("[color=orange]═══ 정예 전투 ═══[/color]")
-	else:
-		append_text("")
-		append_text("[color=red]═══ 전투 ═══[/color]")
-
-	# 적 소개
-	var enemy_names: Array = []
-	for enemy in enemies:
-		var e_name: String = String(enemy.get("name", "적%d" % int(enemy.get("internal_id", 0))))
-		var hp: int = int(enemy.get("current_hp", 0))
-		var max_hp: int = int(enemy.get("max_hp", 1))
-		if bool(enemy.get("alive", true)):
-			enemy_names.append("[color=red]%s[/color]" % e_name)
-			append_text("  [color=red]%s[/color] HP: %d/%d" % [e_name, hp, max_hp])
-		else:
-			append_text("  [color=gray]%s (처치)[/color]" % e_name)
-
-	if enemy_names.size() > 0:
-		var combined := ", ".join(enemy_names)
+	if not _battle_intro_shown:
+		_battle_intro_shown = true
 		if _last_battle_type == "boss":
-			append_text("[color=red]%s이(가) 길을 막아섰다![/color]" % combined)
-		elif enemy_names.size() == 1:
-			append_text("[color=red]%s이(가) 나타났다![/color]" % combined)
+			append_text("")
+			append_text("[color=red][b]═══ BOSS ═══[/b][/color]")
+		elif _last_battle_type == "elite":
+			append_text("")
+			append_text("[color=orange]═══ 정예 전투 ═══[/color]")
 		else:
-			append_text("[color=red]%s이(가) 나타났다![/color]" % combined)
+			append_text("")
+			append_text("[color=red]═══ 전투 ═══[/color]")
+
+		# 적 소개
+		var enemy_names: Array = []
+		for enemy in enemies:
+			var e_name: String = String(enemy.get("name", "적%d" % int(enemy.get("internal_id", 0))))
+			var hp: int = int(enemy.get("current_hp", 0))
+			var max_hp: int = int(enemy.get("max_hp", 1))
+			if bool(enemy.get("alive", true)):
+				enemy_names.append("[color=red]%s[/color]" % e_name)
+				append_text("  [color=red]%s[/color] HP: %d/%d" % [e_name, hp, max_hp])
+			else:
+				append_text("  [color=gray]%s (처치)[/color]" % e_name)
+
+		if enemy_names.size() > 0:
+			var combined := ", ".join(enemy_names)
+			if _last_battle_type == "boss":
+				append_text("[color=red]%s이(가) 길을 막아섰다![/color]" % combined)
+			elif enemy_names.size() == 1:
+				append_text("[color=red]%s이(가) 나타났다![/color]" % combined)
+			else:
+				append_text("[color=red]%s이(가) 나타났다![/color]" % combined)
 
 
 func _on_input_requested(choices: Array) -> void:
@@ -203,6 +206,7 @@ func _on_node_selected(node_id: String) -> void:
 	match node_type:
 		"combat", "unique", "boss":
 			_last_battle_type = node_type
+			_battle_intro_shown = false
 			append_text("")
 			if node_type == "boss":
 				append_text("[color=red][b]보스가 다가온다...[/b][/color]")
@@ -231,7 +235,6 @@ func _on_node_selected(node_id: String) -> void:
 			if gold > 0:
 				append_text("[color=gold]골드 %d를 획득했다![/color]" % gold)
 			runner.complete_node()
-			_show_map()
 
 
 func _auto_advance_combat() -> void:
@@ -256,7 +259,6 @@ func _auto_advance_combat() -> void:
 					append_text("[color=gold]골드 %d를 획득했다![/color]" % gold)
 				if bool(runner.run_state.get("ended", false)):
 					return
-				_show_map()
 			elif battle_result == "defeat":
 				append_text("[color=red]전투 패배...[/color]")
 				return
@@ -328,7 +330,6 @@ func _process_follow_up(turn_result: Dictionary) -> void:
 					append_text("[color=gold]골드 %d를 획득했다![/color]" % gold)
 				if bool(runner.run_state.get("ended", false)):
 					return
-				_show_map()
 			elif battle_result == "defeat":
 				append_text("[color=red]전투 패배...[/color]")
 				return
@@ -381,7 +382,6 @@ func _on_event_choice_selected(choice_id: String, label: String) -> void:
 		append_text("[color=yellow]적들이 습격해온다![/color]")
 
 	runner.complete_node()
-	_show_map()
 
 
 func _show_shop(shop_data: Dictionary) -> void:
@@ -414,7 +414,6 @@ func _on_shop_buy(item_index: int) -> void:
 func _on_shop_leave() -> void:
 	append_text("[color=gray]상점을 나왔다.[/color]")
 	runner.complete_node()
-	_show_map()
 
 
 func _show_campfire() -> void:
@@ -439,7 +438,6 @@ func _on_campfire_rest() -> void:
 	var healed: int = int(result.get("healed", 0))
 	append_text("[color=green]모닥불 옆에서 쉬었다. HP %d 회복![/color]" % healed)
 	runner.complete_node()
-	_show_map()
 
 
 func _on_campfire_invest(stat_name: String) -> void:
@@ -455,7 +453,6 @@ func _on_campfire_invest(stat_name: String) -> void:
 func _on_campfire_leave() -> void:
 	append_text("[color=gray]모닥불의 온기가 등 뒤로 멀어진다.[/color]")
 	runner.complete_node()
-	_show_map()
 
 
 func _on_restart() -> void:
@@ -463,16 +460,6 @@ func _on_restart() -> void:
 	append_text("[color=cyan][b]── 새로운 모험이 시작된다 ──[/b][/color]")
 	append_text("")
 	runner.start_run()
-
-
-func _show_map() -> void:
-	_current_state = "map"
-	if runner == null:
-		return
-	_on_map_state({
-		"current_floor": int(runner.run_state.get("current_floor", 1)),
-		"available_nodes": runner.get_available_nodes(),
-	})
 
 
 func append_text(text: String) -> void:

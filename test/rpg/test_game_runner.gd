@@ -548,7 +548,7 @@ func test_run_state_tracking() -> void:
 	runner.enter_node()
 	battle_manager.battle_end_result = "victory"
 	runner.complete_node()
-	assert_eq(int(runner.run_state.get("current_floor", 0)), 1, "run state should track current floor")
+	assert_eq(int(runner.run_state.get("current_floor", 0)), 2, "run state should track current floor after node completion")
 	assert_eq((runner.run_state.get("nodes_visited", []) as Array).size(), 1, "run state should track visited nodes")
 	assert_eq(int(runner.run_state.get("combats_won", 0)), 1, "run state should track combat wins")
 
@@ -587,6 +587,24 @@ func test_signals() -> void:
 	assert_gt(tracker.input_count, 0, "player_input_requested should fire")
 	assert_gt(tracker.message_count, 0, "message_logged should fire")
 	assert_eq(tracker.end_count, 1, "run_ended should fire once on boss victory")
+
+
+func test_complete_node_emits_map_once_when_advancing_floor() -> void:
+	var battle_manager = _CaptureBattleManager.new()
+	var tracker = _SignalTracker.new()
+	var runner = GAME_RUNNER_SCRIPT.new({
+		"battle_manager": battle_manager,
+		"reward_generator": _FixedRewardGenerator.new(),
+		"reward_manager": _CaptureRewardManager.new(),
+		"content_data": _StubContentData.new(),
+	})
+	runner.start_run({"act": _act_with_single_node("combat", {"tier": "normal"})})
+	runner.select_node("floor1_node1")
+	runner.enter_node()
+	runner.map_state_changed.connect(tracker.on_map)
+	battle_manager.battle_end_result = "victory"
+	runner.complete_node()
+	assert_eq(tracker.map_count, 1, "completing a node should emit one map update when advancing floors")
 
 
 func test_get_party_status() -> void:

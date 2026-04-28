@@ -507,8 +507,11 @@ func complete_node() -> Dictionary:
 		_:
 			pass
 
+	# 보스가 아니면 다음 층으로 이동
+	if not bool(run_state.get("ended", false)):
+		advance_floor()
+
 	run_state["current_floor"] = map_manager.current_floor_number
-	emit_signal("map_state_changed", _map_state())
 	return result
 
 
