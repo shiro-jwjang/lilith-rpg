@@ -777,13 +777,22 @@ func _get_enemy_configs_for_tier(tier: String) -> Array:
 func _random_pick_enemies(pool: Array, count: int) -> Array:
 	if pool.is_empty():
 		return []
-	var shuffled := pool.duplicate(true)
-	shuffled.shuffle()
+	var shuffled := _shuffle_with_rng(pool)
 	var picked_count := mini(count, shuffled.size())
 	var result: Array = []
 	for i in range(picked_count):
 		result.append(_normalize_enemy_config(shuffled[i]))
 	return result
+
+
+func _shuffle_with_rng(pool: Array) -> Array:
+	var shuffled := pool.duplicate(true)
+	for index in range(shuffled.size() - 1, 0, -1):
+		var swap_index: int = rng.randi_range(0, index)
+		var value = shuffled[index]
+		shuffled[index] = shuffled[swap_index]
+		shuffled[swap_index] = value
+	return shuffled
 
 
 func _normalize_enemy_array(source: Array) -> Array:

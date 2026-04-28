@@ -10,13 +10,16 @@ const RELIC_IDS := [
 	"균열의 실",
 ]
 
-var _rng := RandomNumberGenerator.new()
+var _rng = null
 var _equipment_catalog: Dictionary = {}
 var _potion_registry = null
 
 
 func _init(config: Dictionary = {}) -> void:
-	_rng.randomize()
+	_rng = config.get("rng", null)
+	if _rng == null:
+		_rng = RandomNumberGenerator.new()
+		_rng.randomize()
 	if config.has("seed"):
 		_rng.seed = int(config.get("seed", 0))
 

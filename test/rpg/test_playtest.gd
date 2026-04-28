@@ -2,9 +2,15 @@ extends "res://test/rpg/test_base.gd"
 
 const GAME_RUNNER_SCRIPT := preload("res://scripts/rpg/game_runner.gd")
 const EVENT_MANAGER_SCRIPT := preload("res://scripts/rpg/events/event_manager.gd")
+const RUINED_ALTAR_EVENT_SCRIPT := preload("res://scripts/rpg/events/event_ruined_altar.gd")
+const RUIN_MERCHANT_EVENT_SCRIPT := preload("res://scripts/rpg/events/event_ruin_merchant.gd")
+const SEALED_WARD_EVENT_SCRIPT := preload("res://scripts/rpg/events/event_sealed_ward.gd")
+const MOONLIGHT_RIFT_EVENT_SCRIPT := preload("res://scripts/rpg/events/event_moonlight_rift.gd")
 const FLOOR_SCRIPT := preload("res://scripts/rpg/map/floor.gd")
 const NODE_SCRIPT := preload("res://scripts/rpg/map/node.gd")
+const SHOP_MANAGER_SCRIPT := preload("res://scripts/rpg/shop/shop_manager.gd")
 const UNIT_SCRIPT := preload("res://scripts/rpg/combat/unit.gd")
+const LIVE_REWARD_GENERATOR_SCRIPT := preload("res://scripts/rpg/rewards/reward_generator.gd")
 const WALLET_SCRIPT := preload("res://scripts/rpg/economy/wallet.gd")
 
 
@@ -104,6 +110,17 @@ class _MpCostContentData extends _StubContentData:
 		super._init()
 		skill_map["마법지원가"] = [
 			{"name": "화염", "mp_cost": 5, "multiplier": 1.1, "target": "single"},
+		]
+
+
+class _DiverseContentData extends _StubContentData:
+	func _init() -> void:
+		super._init()
+		normal_enemies = [
+			_enemy_template("늑대", "normal", 32, 9, 3, 11, []),
+			_enemy_template("도적", "normal", 36, 11, 4, 12, []),
+			_enemy_template("해골병", "normal", 44, 10, 5, 7, []),
+			_enemy_template("진흙 정령", "normal", 52, 8, 7, 5, []),
 		]
 
 
@@ -614,6 +631,169 @@ func test_all_event_choices() -> void:
 			assert_true(bool(result.get("combat_triggered", false)) or not (result.get("reward", {}) as Dictionary).is_empty(), "event %s choice %s should produce combat or reward" % [event_id, choice_id])
 
 
+func test_ruined_altar_destroy_both_branches() -> void:
+	var context := _make_event_context({"gold": 50, "visit_count": 3})
+	var relic_seed := _find_seed_for_result_flag(RUINED_ALTAR_EVENT_SCRIPT, "파괴", context, "combat_triggered", false)
+	var combat_seed := _find_seed_for_result_flag(RUINED_ALTAR_EVENT_SCRIPT, "파괴", context, "combat_triggered", true)
+	if relic_seed == -1 or combat_seed == -1:
+		push_warning("Seed not found, skipping ruined altar destroy branch test")
+		return
+
+	var relic_result := _resolve_event_choice_with_seed(RUINED_ALTAR_EVENT_SCRIPT, relic_seed, "파괴", context)
+	assert_false(bool(relic_result.get("combat_triggered", false)), "ruined altar destroy should cover the relic branch")
+	assert_true(bool(relic_result.get("relic_offered", false)), "ruined altar destroy relic branch should offer a relic")
+	assert_eq(String((relic_result.get("reward", {}) as Dictionary).get("type", "")), "relic_candidate", "ruined altar destroy relic branch should produce a relic reward")
+
+	var combat_result := _resolve_event_choice_with_seed(RUINED_ALTAR_EVENT_SCRIPT, combat_seed, "파괴", context)
+	assert_true(bool(combat_result.get("combat_triggered", false)), "ruined altar destroy should cover the combat branch")
+	assert_eq(String(combat_result.get("next_state", "")), "combat", "ruined altar destroy combat branch should advance into combat")
+	assert_eq(String((combat_result.get("combat", {}) as Dictionary).get("battle_type", "")), "normal", "ruined altar destroy combat branch should start a normal battle")
+	assert_ne(String((combat_result.get("combat", {}) as Dictionary).get("enemy", "")), "", "ruined altar destroy combat branch should pick an enemy")
+
+
+func test_moonlight_rift_explore_both_branches() -> void:
+	var context := _make_event_context({"gold": 50, "status_effects": ["burn", "freeze"]})
+	var relic_seed := _find_seed_for_result_flag(MOONLIGHT_RIFT_EVENT_SCRIPT, "탐사", context, "combat_triggered", false)
+	var combat_seed := _find_seed_for_result_flag(MOONLIGHT_RIFT_EVENT_SCRIPT, "탐사", context, "combat_triggered", true)
+	if relic_seed == -1 or combat_seed == -1:
+		push_warning("Seed not found, skipping moonlight rift explore branch test")
+		return
+
+	var relic_result := _resolve_event_choice_with_seed(MOONLIGHT_RIFT_EVENT_SCRIPT, relic_seed, "탐사", context)
+	assert_false(bool(relic_result.get("combat_triggered", false)), "moonlight rift explore should cover the relic branch")
+	assert_eq(String((relic_result.get("reward", {}) as Dictionary).get("type", "")), "relic_candidate", "moonlight rift explore relic branch should offer a relic")
+
+	var combat_result := _resolve_event_choice_with_seed(MOONLIGHT_RIFT_EVENT_SCRIPT, combat_seed, "탐사", context)
+	assert_true(bool(combat_result.get("combat_triggered", false)), "moonlight rift explore should cover the combat branch")
+	assert_eq(String((combat_result.get("combat", {}) as Dictionary).get("battle_type", "")), "normal", "moonlight rift explore combat branch should start a normal battle")
+	assert_ne(String((combat_result.get("combat", {}) as Dictionary).get("enemy", "")), "", "moonlight rift explore combat branch should pick an enemy")
+
+
+func test_ruin_merchant_buy_all_branches() -> void:
+	var context := _make_event_context({"gold": 100})
+	var reward_types := ["equipment", "potion", "upgrade_material"]
+	var seeds := _find_seeds_for_reward_types(RUIN_MERCHANT_EVENT_SCRIPT, "구매", context, reward_types)
+	for reward_type in reward_types:
+		if int(seeds.get(reward_type, -1)) == -1:
+			push_warning("Seed not found, skipping ruin merchant buy branch test")
+			return
+
+	for reward_type in reward_types:
+		var result := _resolve_event_choice_with_seed(RUIN_MERCHANT_EVENT_SCRIPT, int(seeds[reward_type]), "구매", context)
+		var wallet = ((result.get("player", {}) as Dictionary).get("wallet", null) as RefCounted)
+		assert_eq(String((result.get("reward", {}) as Dictionary).get("type", "")), reward_type, "ruin merchant buy should cover %s reward" % reward_type)
+		assert_false(bool(result.get("combat_triggered", false)), "ruin merchant buy %s branch should not trigger combat" % reward_type)
+		assert_not_null(wallet, "ruin merchant buy should preserve the player wallet")
+		if wallet != null:
+			assert_eq(int(wallet.get_gold()), 75, "ruin merchant buy %s branch should spend 25 gold" % reward_type)
+
+
+func test_ruin_merchant_rob_both_branches() -> void:
+	var context := _make_event_context({"gold": 50})
+	var gold_seed := _find_seed_for_result_flag(RUIN_MERCHANT_EVENT_SCRIPT, "강탈", context, "combat_triggered", false)
+	var combat_seed := _find_seed_for_result_flag(RUIN_MERCHANT_EVENT_SCRIPT, "강탈", context, "combat_triggered", true)
+	if gold_seed == -1 or combat_seed == -1:
+		push_warning("Seed not found, skipping ruin merchant rob branch test")
+		return
+
+	var gold_result := _resolve_event_choice_with_seed(RUIN_MERCHANT_EVENT_SCRIPT, gold_seed, "강탈", context)
+	var gold_wallet = ((gold_result.get("player", {}) as Dictionary).get("wallet", null) as RefCounted)
+	assert_false(bool(gold_result.get("combat_triggered", false)), "ruin merchant rob should cover the gold branch")
+	assert_eq(String((gold_result.get("reward", {}) as Dictionary).get("type", "")), "gold_bonus", "ruin merchant rob gold branch should grant bonus gold")
+	assert_not_null(gold_wallet, "ruin merchant rob gold branch should preserve the player wallet")
+	if gold_wallet != null:
+		assert_eq(int(gold_wallet.get_gold()), 90, "ruin merchant rob gold branch should add 40 gold")
+
+	var combat_result := _resolve_event_choice_with_seed(RUIN_MERCHANT_EVENT_SCRIPT, combat_seed, "강탈", context)
+	assert_true(bool(combat_result.get("combat_triggered", false)), "ruin merchant rob should cover the combat branch")
+	assert_eq(String((combat_result.get("combat", {}) as Dictionary).get("battle_type", "")), "normal", "ruin merchant rob combat branch should start a normal battle")
+
+
+func test_sealed_ward_plunder_both_branches() -> void:
+	var context := _make_event_context({"gold": 50, "battle_wins": 3})
+	var equipment_seed := _find_seed_for_result_flag(SEALED_WARD_EVENT_SCRIPT, "약탈", context, "combat_triggered", false)
+	var combat_seed := _find_seed_for_result_flag(SEALED_WARD_EVENT_SCRIPT, "약탈", context, "combat_triggered", true)
+	if equipment_seed == -1 or combat_seed == -1:
+		push_warning("Seed not found, skipping sealed ward plunder branch test")
+		return
+
+	var equipment_result := _resolve_event_choice_with_seed(SEALED_WARD_EVENT_SCRIPT, equipment_seed, "약탈", context)
+	assert_false(bool(equipment_result.get("combat_triggered", false)), "sealed ward plunder should cover the equipment branch")
+	assert_eq(String((equipment_result.get("reward", {}) as Dictionary).get("type", "")), "equipment", "sealed ward plunder equipment branch should grant equipment")
+
+	var combat_result := _resolve_event_choice_with_seed(SEALED_WARD_EVENT_SCRIPT, combat_seed, "약탈", context)
+	assert_true(bool(combat_result.get("combat_triggered", false)), "sealed ward plunder should cover the combat branch")
+	assert_eq(String((combat_result.get("combat", {}) as Dictionary).get("battle_type", "")), "normal", "sealed ward plunder combat branch should start a normal battle")
+
+
+func test_hidden_choices_visibility() -> void:
+	var manager = EVENT_MANAGER_SCRIPT.new()
+
+	assert_false(_choice_ids(manager.get_visible_choices("ruined_altar", _make_event_context({"visit_count": 2}))).has("기원"), "ruined altar wish should stay hidden before 3 visits")
+	assert_true(_choice_ids(manager.get_visible_choices("ruined_altar", _make_event_context({"visit_count": 3}))).has("기원"), "ruined altar wish should appear at 3 visits")
+
+	assert_false(_choice_ids(manager.get_visible_choices("ruin_merchant", _make_event_context({"gold": 50}))).has("특별 거래"), "ruin merchant special trade should stay hidden below 100 gold")
+	assert_true(_choice_ids(manager.get_visible_choices("ruin_merchant", _make_event_context({"gold": 100}))).has("특별 거래"), "ruin merchant special trade should appear at 100 gold")
+
+	assert_false(_choice_ids(manager.get_visible_choices("sealed_ward", _make_event_context({"battle_wins": 2}))).has("봉인 해제"), "sealed ward unseal should stay hidden before 3 wins")
+	assert_true(_choice_ids(manager.get_visible_choices("sealed_ward", _make_event_context({"battle_wins": 3}))).has("봉인 해제"), "sealed ward unseal should appear at 3 wins")
+
+	assert_false(_choice_ids(manager.get_visible_choices("moonlight_rift", _make_event_context({"status_effects": []}))).has("균열 강화"), "moonlight rift empower should stay hidden with fewer than 2 status effects")
+	assert_true(_choice_ids(manager.get_visible_choices("moonlight_rift", _make_event_context({"status_effects": ["a", "b"]}))).has("균열 강화"), "moonlight rift empower should appear with 2 status effects")
+
+
+func test_shop_pool_deterministic_with_seed() -> void:
+	var first_manager = SHOP_MANAGER_SCRIPT.new({"wallet": WALLET_SCRIPT.new({"gold": 0}), "rng": _make_seeded_rng(42)})
+	var second_manager = SHOP_MANAGER_SCRIPT.new({"wallet": WALLET_SCRIPT.new({"gold": 0}), "rng": _make_seeded_rng(42)})
+	var first_visit := first_manager.visit_shop({"forced_equipment_count": 4})
+	var second_visit := second_manager.visit_shop({"forced_equipment_count": 4})
+	assert_eq(first_visit.get("equipment_list", []), second_visit.get("equipment_list", []), "shop pool should repeat the same equipment list for the same seed")
+	assert_eq(first_visit.get("relic_list", []), second_visit.get("relic_list", []), "shop pool should repeat the same relic list for the same seed")
+	assert_eq(first_visit.get("potion_list", []), second_visit.get("potion_list", []), "shop pool should repeat the same potion list for the same seed")
+
+	var differing_shop_seeds := _find_shop_seed_pair_with_difference()
+	if differing_shop_seeds.is_empty():
+		push_warning("No differing shop seeds found, skipping difference assertion")
+		return
+	var third_manager = SHOP_MANAGER_SCRIPT.new({"wallet": WALLET_SCRIPT.new({"gold": 0}), "rng": _make_seeded_rng(int(differing_shop_seeds[0]))})
+	var fourth_manager = SHOP_MANAGER_SCRIPT.new({"wallet": WALLET_SCRIPT.new({"gold": 0}), "rng": _make_seeded_rng(int(differing_shop_seeds[1]))})
+	var third_visit := third_manager.visit_shop({"forced_equipment_count": 4})
+	var fourth_visit := fourth_manager.visit_shop({"forced_equipment_count": 4})
+	assert_ne(_shop_snapshot(third_visit), _shop_snapshot(fourth_visit), "shop pool should differ for at least one seed pair")
+
+
+func test_combat_rewards_deterministic_with_seed() -> void:
+	var first_generator = LIVE_REWARD_GENERATOR_SCRIPT.new({"rng": _make_seeded_rng(42)})
+	var second_generator = LIVE_REWARD_GENERATOR_SCRIPT.new({"rng": _make_seeded_rng(42)})
+	var first_rewards := first_generator.generate_rewards("normal")
+	var second_rewards := second_generator.generate_rewards("normal")
+	assert_eq(first_rewards, second_rewards, "combat rewards should repeat for the same seed")
+
+	var differing_reward_seeds := _find_reward_seed_pair_with_difference("normal")
+	if differing_reward_seeds.is_empty():
+		push_warning("No differing reward seeds found, skipping difference assertion")
+		return
+	var third_rewards := LIVE_REWARD_GENERATOR_SCRIPT.new({"rng": _make_seeded_rng(int(differing_reward_seeds[0]))}).generate_rewards("normal")
+	var fourth_rewards := LIVE_REWARD_GENERATOR_SCRIPT.new({"rng": _make_seeded_rng(int(differing_reward_seeds[1]))}).generate_rewards("normal")
+	assert_ne(third_rewards, fourth_rewards, "combat rewards should differ for at least one seed pair")
+
+
+func test_enemy_composition_deterministic_with_seed() -> void:
+	var first_runner = _make_runner({"content_data": _DiverseContentData.new(), "rng": _make_seeded_rng(42)})
+	var second_runner = _make_runner({"content_data": _DiverseContentData.new(), "rng": _make_seeded_rng(42)})
+	var first_enemies: Array = first_runner._get_enemy_configs_for_tier("normal")
+	var second_enemies: Array = second_runner._get_enemy_configs_for_tier("normal")
+	assert_eq(first_enemies, second_enemies, "enemy composition should repeat for the same seed")
+
+	var differing_enemy_seeds := _find_enemy_seed_pair_with_difference()
+	if differing_enemy_seeds.is_empty():
+		push_warning("No differing enemy seeds found, skipping difference assertion")
+		return
+	var third_enemies: Array = _make_runner({"content_data": _DiverseContentData.new(), "rng": _make_seeded_rng(int(differing_enemy_seeds[0]))})._get_enemy_configs_for_tier("normal")
+	var fourth_enemies: Array = _make_runner({"content_data": _DiverseContentData.new(), "rng": _make_seeded_rng(int(differing_enemy_seeds[1]))})._get_enemy_configs_for_tier("normal")
+	assert_ne(third_enemies, fourth_enemies, "enemy composition should differ for at least one seed pair")
+
+
 func test_cannot_select_previous_floor_nodes() -> void:
 	var battle_manager = _CaptureBattleManager.new()
 	var runner = _make_runner({
@@ -1039,6 +1219,112 @@ func _make_act(floor_node_specs: Array) -> Dictionary:
 			floor.nodes.append(NODE_SCRIPT.new(String(spec.get("type", "")), floor_number, index, node_data))
 		floors.append(floor)
 	return {"floors": floors, "event_catalog": []}
+
+
+func _make_seeded_rng(seed: int) -> RandomNumberGenerator:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed
+	return rng
+
+
+func _make_event_context(config: Dictionary = {}) -> Dictionary:
+	return {
+		"current_node": config.get("current_node", null),
+		"player": {
+			"wallet": WALLET_SCRIPT.new({"gold": int(config.get("gold", 50))}),
+			"hp": int(config.get("hp", 100)),
+			"hp_max": int(config.get("hp_max", 100)),
+			"mp": int(config.get("mp", 40)),
+			"status_effects": (config.get("status_effects", []) as Array).duplicate(true),
+		},
+		"visit_count": int(config.get("visit_count", 0)),
+		"battle_wins": int(config.get("battle_wins", 0)),
+		"next_combat_modifier": (config.get("next_combat_modifier", {}) as Dictionary).duplicate(true),
+	}
+
+
+func _clone_event_context(context: Dictionary) -> Dictionary:
+	var clone: Dictionary = context.duplicate(true)
+	var player: Dictionary = (clone.get("player", {}) as Dictionary).duplicate(true)
+	var original_player: Dictionary = context.get("player", {})
+	if original_player.has("wallet"):
+		var original_wallet = original_player["wallet"]
+		player["wallet"] = WALLET_SCRIPT.new({"gold": int(original_wallet.get_gold())})
+	player["status_effects"] = (player.get("status_effects", []) as Array).duplicate(true)
+	clone["player"] = player
+	clone["next_combat_modifier"] = (clone.get("next_combat_modifier", {}) as Dictionary).duplicate(true)
+	return clone
+
+
+func _resolve_event_choice_with_seed(event_script, seed: int, choice_id: String, context: Dictionary) -> Dictionary:
+	var event = event_script.new({"rng": _make_seeded_rng(seed)})
+	return event.resolve_choice(choice_id, _clone_event_context(context))
+
+
+func _find_seed_for_result_flag(event_script, choice_id: String, context: Dictionary, key: String, expected, max_seed: int = 200) -> int:
+	for seed in range(max_seed):
+		var result := _resolve_event_choice_with_seed(event_script, seed, choice_id, context)
+		if result.get(key) == expected:
+			return seed
+	return -1
+
+
+func _find_seeds_for_reward_types(event_script, choice_id: String, context: Dictionary, reward_types: Array, max_seed: int = 200) -> Dictionary:
+	var found := {}
+	for reward_type in reward_types:
+		found[reward_type] = -1
+
+	for seed in range(max_seed):
+		var result := _resolve_event_choice_with_seed(event_script, seed, choice_id, context)
+		var reward_type := String((result.get("reward", {}) as Dictionary).get("type", ""))
+		if found.has(reward_type) and int(found.get(reward_type, -1)) == -1:
+			found[reward_type] = seed
+		var complete := true
+		for required_type in reward_types:
+			if int(found.get(required_type, -1)) == -1:
+				complete = false
+				break
+		if complete:
+			return found
+	return found
+
+
+func _shop_snapshot(visit: Dictionary) -> Dictionary:
+	return {
+		"equipment": (visit.get("equipment_list", []) as Array).duplicate(true),
+		"relics": (visit.get("relic_list", []) as Array).duplicate(true),
+		"potions": (visit.get("potion_list", []) as Array).duplicate(true),
+	}
+
+
+func _find_shop_seed_pair_with_difference(max_seed: int = 25) -> Array:
+	for first_seed in range(max_seed):
+		for second_seed in range(first_seed + 1, max_seed):
+			var first_visit := SHOP_MANAGER_SCRIPT.new({"wallet": WALLET_SCRIPT.new({"gold": 0}), "rng": _make_seeded_rng(first_seed)}).visit_shop({"forced_equipment_count": 4})
+			var second_visit := SHOP_MANAGER_SCRIPT.new({"wallet": WALLET_SCRIPT.new({"gold": 0}), "rng": _make_seeded_rng(second_seed)}).visit_shop({"forced_equipment_count": 4})
+			if _shop_snapshot(first_visit) != _shop_snapshot(second_visit):
+				return [first_seed, second_seed]
+	return []
+
+
+func _find_reward_seed_pair_with_difference(battle_type: String, max_seed: int = 50) -> Array:
+	for first_seed in range(max_seed):
+		for second_seed in range(first_seed + 1, max_seed):
+			var first_rewards := LIVE_REWARD_GENERATOR_SCRIPT.new({"rng": _make_seeded_rng(first_seed)}).generate_rewards(battle_type)
+			var second_rewards := LIVE_REWARD_GENERATOR_SCRIPT.new({"rng": _make_seeded_rng(second_seed)}).generate_rewards(battle_type)
+			if first_rewards != second_rewards:
+				return [first_seed, second_seed]
+	return []
+
+
+func _find_enemy_seed_pair_with_difference(max_seed: int = 50) -> Array:
+	for first_seed in range(max_seed):
+		for second_seed in range(first_seed + 1, max_seed):
+			var first_enemies: Array = _make_runner({"content_data": _DiverseContentData.new(), "rng": _make_seeded_rng(first_seed)})._get_enemy_configs_for_tier("normal")
+			var second_enemies: Array = _make_runner({"content_data": _DiverseContentData.new(), "rng": _make_seeded_rng(second_seed)})._get_enemy_configs_for_tier("normal")
+			if first_enemies != second_enemies:
+				return [first_seed, second_seed]
+	return []
 
 
 func _choice_ids(choices: Array) -> Array:
