@@ -176,6 +176,8 @@ func reset_for_new_run() -> void:
 
 
 func _get_current_gold() -> int:
+	if wallet == null:
+		return 0
 	return int(wallet.get_gold())
 
 

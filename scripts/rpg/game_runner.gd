@@ -165,6 +165,8 @@ func get_available_nodes() -> Array:
 
 
 func select_node(node_id: String) -> Dictionary:
+	if bool(run_state.get("ended", false)):
+		return {"ok": false, "error": "Run already ended"}
 	var result: Dictionary = map_manager.select_node(node_id)
 	if not bool(result.get("ok", false)):
 		return result
@@ -179,6 +181,8 @@ func select_node(node_id: String) -> Dictionary:
 
 
 func enter_node() -> Dictionary:
+	if bool(run_state.get("ended", false)):
+		return {"ok": false, "error": "Run already ended"}
 	if current_node == null:
 		return {"ok": false, "error": "No node selected"}
 
@@ -217,6 +221,8 @@ func enter_combat(enemy_configs: Array) -> void:
 
 
 func next_turn() -> Dictionary:
+	if bool(run_state.get("ended", false)):
+		return {"ok": false, "error": "Run already ended"}
 	while true:
 		var turn_result: Dictionary = battle_manager.next_turn()
 		if turn_result.is_empty():
@@ -387,6 +393,8 @@ func enter_event(event_id: String) -> Dictionary:
 
 
 func resolve_event_choice(choice_id: String) -> Dictionary:
+	if bool(run_state.get("ended", false)):
+		return {"event_resolved": false, "error": "Run already ended"}
 	if current_node == null:
 		return {"event_resolved": false, "error": "No current node"}
 	var result: Dictionary = event_manager.resolve_choice(String(current_node.event_id), choice_id, _event_context())
@@ -436,15 +444,30 @@ func enter_campfire() -> Dictionary:
 func campfire_rest() -> Dictionary:
 	if party.is_empty():
 		return {"success": false, "error": "No party"}
-	var leader: Dictionary = party[0]
-	var result: Dictionary = campfire_manager.rest({
-		"hp": int(leader.get("current_hp", 0)),
-		"max_hp": int(leader.get("max_hp", 0)),
-	})
-	var player_after: Dictionary = result.get("player", {})
-	leader["current_hp"] = int(player_after.get("hp", leader.get("current_hp", 0)))
-	party[0] = leader
-	return result
+	var healed_party: Array = []
+	var total_healed := 0
+	var leader_result: Dictionary = {}
+	for index in range(party.size()):
+		var member: Dictionary = party[index]
+		var result: Dictionary = campfire_manager.rest({
+			"hp": int(member.get("current_hp", 0)),
+			"max_hp": int(member.get("max_hp", 0)),
+		})
+		if index == 0:
+			leader_result = result
+		var player_after: Dictionary = result.get("player", {})
+		member["current_hp"] = int(player_after.get("hp", member.get("current_hp", 0)))
+		party[index] = member
+		total_healed += int(result.get("healed", 0))
+		healed_party.append({
+			"name": String(member.get("name", "")),
+			"current_hp": int(member.get("current_hp", 0)),
+			"max_hp": int(member.get("max_hp", 0)),
+			"healed": int(result.get("healed", 0)),
+		})
+	leader_result["party"] = healed_party
+	leader_result["total_healed"] = total_healed
+	return leader_result
 
 
 func campfire_invest(stat_name: String) -> Dictionary:
@@ -485,13 +508,10 @@ func advance_floor() -> bool:
 
 
 func complete_node() -> Dictionary:
+	if bool(run_state.get("ended", false)):
+		return {"success": false, "error": "Run already ended"}
 	if current_node == null:
 		return {"success": false, "error": "No current node"}
-
-	current_node.visited = true
-	var visited: Array = run_state.get("nodes_visited", [])
-	visited.append(String(current_node.id))
-	run_state["nodes_visited"] = visited
 
 	var result := {"success": true, "node_id": String(current_node.id)}
 	match String(current_node.type):
@@ -501,16 +521,25 @@ func complete_node() -> Dictionary:
 				return {"success": false, "error": "Combat not won"}
 			var rewards_result: Dictionary = complete_combat()
 			result["combat"] = rewards_result
-			if String(current_node.type) == "boss":
-				run_state["victory"] = true
-				run_state["ended"] = true
-				run_state["floors_cleared"] = 3
-				emit_signal("run_ended", get_run_summary())
 		"treasure":
 			result["treasure"] = _last_treasure_result if not _last_treasure_result.is_empty() else enter_treasure()
 			_last_treasure_result = {}
 		_:
 			pass
+
+	current_node.visited = true
+	var visited: Array = run_state.get("nodes_visited", [])
+	visited.append(String(current_node.id))
+	run_state["nodes_visited"] = visited
+
+	if String(current_node.type) == "boss":
+		run_state["victory"] = true
+		run_state["ended"] = true
+		run_state["floors_cleared"] = 3
+		current_node = null
+		run_state["current_node_id"] = ""
+		_current_turn = null
+		emit_signal("run_ended", get_run_summary())
 
 	# 보스가 아니면 다음 층으로 이동
 	if not bool(run_state.get("ended", false)):
