@@ -302,11 +302,13 @@ func _auto_advance_combat() -> void:
 				append_text("[color=green]전투 승리![/color]")
 				if _last_battle_type == "boss":
 					append_text("[color=gold]보스를 쓰러뜨렸다![/color]")
-				var complete_result: Dictionary = runner.complete_node()
+				var complete_result: Dictionary = runner.complete_node(true)
 				var combat_data: Dictionary = complete_result.get("combat", {})
 				var gold: int = int(combat_data.get("gold_earned", 0))
 				if gold > 0:
 					append_text("[color=gold]골드 %d를 획득했다![/color]" % gold)
+				if bool(complete_result.get("needs_advance", false)):
+					runner.advance_floor()
 				if bool(runner.run_state.get("ended", false)):
 					return
 			elif battle_result == "defeat":
@@ -379,11 +381,13 @@ func _process_follow_up(turn_result: Dictionary) -> void:
 				append_text("[color=green]전투 승리![/color]")
 				if _last_battle_type == "boss":
 					append_text("[color=gold]보스를 쓰러뜨렸다![/color]")
-				var complete_result: Dictionary = runner.complete_node()
+				var complete_result: Dictionary = runner.complete_node(true)
 				var combat_data: Dictionary = complete_result.get("combat", {})
 				var gold: int = int(combat_data.get("gold_earned", 0))
 				if gold > 0:
 					append_text("[color=gold]골드 %d를 획득했다![/color]" % gold)
+				if bool(complete_result.get("needs_advance", false)):
+					runner.advance_floor()
 				if bool(runner.run_state.get("ended", false)):
 					return
 			elif battle_result == "defeat":
