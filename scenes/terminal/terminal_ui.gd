@@ -289,6 +289,12 @@ func _auto_advance_combat() -> void:
 
 
 func _on_skill_selected(skill_index: int) -> void:
+	# player_attack 호출 전에 현재 턴 유닛 이름 캡처
+	var turn_unit = runner._current_turn
+	var actor_name := "아군"
+	if turn_unit != null:
+		actor_name = String(turn_unit.get("name", "")) if turn_unit.get("name", "") != "" else "아군"
+
 	var result: Dictionary = runner.player_attack(skill_index)
 	if not bool(result.get("ok", false)):
 		append_text("[color=red]%s[/color]" % String(result.get("error", "")))
@@ -296,16 +302,7 @@ func _on_skill_selected(skill_index: int) -> void:
 
 	var skill: Dictionary = result.get("skill", {})
 	var damage: int = int(result.get("damage", 0))
-	var target_hp: int = int(result.get("target_hp", 0))
 	var skill_name: String = String(skill.get("name", "공격"))
-
-	# 현재 턴 유닛 이름 찾기
-	var actor_name := "리나"
-	if runner != null and runner.battle_manager != null:
-		for ally in runner.battle_manager.allies:
-			if bool(ally.is_ally) and ally.is_alive():
-				actor_name = String(ally.name) if ally.name != "" else "아군"
-				break
 
 	append_text("  [color=cyan]%s[/color]의 [b]%s[/b]! %d 데미지!" % [actor_name, skill_name, damage])
 
