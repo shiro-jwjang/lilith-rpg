@@ -144,6 +144,8 @@ func test_bleed_caps_at_max_stacks_in_combat() -> void:
 	_setup_runner()
 	var enemy = _enter_single_enemy_combat("붉은 달의 파수꾼")
 	_configure_turn_order(18, 14, 10, 12)
+	runner.battle_manager.allies[0].current_mp = 99
+	runner.party[0]["current_mp"] = 99
 	for _i in range(4):
 		_advance_to_specific_ally_turn("리나")
 		var result: Dictionary = runner.player_attack(2)

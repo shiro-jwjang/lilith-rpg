@@ -5,6 +5,7 @@ const CAMPFIRE_MANAGER_SCRIPT := preload("res://scripts/rpg/campfire/campfire_ma
 const CONTENT_DATA_SCRIPT := preload("res://scripts/rpg/data/content_data.gd")
 const DAMAGE_CALCULATOR_SCRIPT := preload("res://scripts/rpg/combat/damage_calculator.gd")
 const ENEMY_AI_SCRIPT := preload("res://scripts/rpg/ai/enemy_ai.gd")
+const EFFECT_CHANCE_CALCULATOR_SCRIPT := preload("res://scripts/rpg/status/effect_chance_calculator.gd")
 const EVENT_MANAGER_SCRIPT := preload("res://scripts/rpg/events/event_manager.gd")
 const INVENTORY_SCRIPT := preload("res://scripts/rpg/inventory/inventory.gd")
 const MAP_MANAGER_SCRIPT := preload("res://scripts/rpg/map/map_manager.gd")
@@ -66,6 +67,15 @@ const PARTY_SKILL_SOURCES := {
 	"warrior": "전위딜러",
 	"guardian": "수호자",
 	"mage": "마법지원가",
+}
+
+const STATUS_DURATIONS := {
+	"출혈": 3,
+	"화상": 3,
+	"둔화": 2,
+	"약화": 2,
+	"파쇄": 2,
+	"기절": 1,
 }
 
 var battle_manager = null
@@ -278,6 +288,8 @@ func next_turn() -> Dictionary:
 		var acting_unit = turn_result.get("unit", null)
 		if acting_unit != null and bool(acting_unit.is_ally):
 			_expire_pending_taunt()
+		_process_active_status_turn(acting_unit, turn_result)
+		battle_result = turn_result.get("battle_result", battle_result)
 		_sync_party_from_battle()
 
 		if battle_result != null and acting_unit == null:
@@ -402,6 +414,7 @@ func player_attack(skill_index: int) -> Dictionary:
 			var multiplier := float(skill.get("multiplier", 1.0))
 			var damage := DAMAGE_CALCULATOR_SCRIPT.calculate_base_damage(_current_turn.atk, multiplier, target.def)
 			target.take_damage(damage)
+			var status_result := _apply_skill_statuses(_current_turn, target, skill)
 			if battle_manager != null and battle_manager.has_method("check_boss_phase_transition"):
 				battle_manager.check_boss_phase_transition()
 			return _finalize_player_action({
@@ -411,6 +424,8 @@ func player_attack(skill_index: int) -> Dictionary:
 				"skill": skill,
 				"target_name": String(target.name),
 				"target_hp": int(target.current_hp),
+				"statuses_applied": status_result.get("statuses_applied", []).duplicate(true),
+				"statuses_missed": status_result.get("statuses_missed", []).duplicate(true),
 			})
 
 
@@ -795,6 +810,61 @@ func _execute_enemy_turn(unit) -> Dictionary:
 		"damage": damage,
 		"target_internal_id": int(target.internal_id),
 	}
+
+
+func _apply_skill_statuses(attacker, target, skill: Dictionary) -> Dictionary:
+	var statuses_applied: Array = []
+	var statuses_missed: Array = []
+	var raw_statuses = skill.get("status_effects", [])
+	if not (raw_statuses is Array):
+		return {
+			"statuses_applied": statuses_applied,
+			"statuses_missed": statuses_missed,
+		}
+
+	for status_name in raw_statuses:
+		var status_type := String(status_name)
+		if status_type.is_empty():
+			continue
+		var hit_chance := EFFECT_CHANCE_CALCULATOR_SCRIPT.calculate_final_chance(
+			float(skill.get("status_chance", 0.0)),
+			float(attacker.effect_hit),
+			float(target.effect_resist)
+		)
+		if hit_chance >= 1.0 or rng.randf() < hit_chance:
+			target.apply_status(status_type, 1, _status_duration_for(status_type))
+			statuses_applied.append(status_type)
+		else:
+			statuses_missed.append(status_type)
+
+	return {
+		"statuses_applied": statuses_applied,
+		"statuses_missed": statuses_missed,
+	}
+
+
+func _process_active_status_turn(acting_unit, turn_result: Dictionary) -> void:
+	if acting_unit == null or not acting_unit.is_alive():
+		return
+
+	var was_stunned: bool = bool(acting_unit.has_status("기절"))
+	var status_result: Dictionary = acting_unit.process_turn_end_status()
+	var tick_damage := int(status_result.get("tick_damage", 0))
+	turn_result["status_result"] = status_result
+	turn_result["dot_damage"] = int(turn_result.get("dot_damage", 0)) + tick_damage
+
+	if was_stunned:
+		turn_result["action_allowed"] = false
+		turn_result["status_skipped"] = true
+
+	if not acting_unit.is_alive():
+		turn_result["action_allowed"] = false
+		if battle_manager != null and battle_manager.has_method("check_battle_end"):
+			turn_result["battle_result"] = battle_manager.check_battle_end()
+
+
+func _status_duration_for(status_type: String) -> int:
+	return int(STATUS_DURATIONS.get(status_type, 2))
 
 
 func _build_enemy_skills(unit) -> Array:
