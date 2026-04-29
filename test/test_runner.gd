@@ -59,36 +59,29 @@ func _init():
 
 
 func _install_test_autoloads() -> void:
-	var bus_setting = String(ProjectSettings.get_setting("autoload/EventBus", ""))
-	if not bus_setting.is_empty():
-		var script_path := bus_setting.trim_prefix("*")
-		var script = load(script_path)
-		if script == null:
-			push_error("Failed to load autoload script: %s" % script_path)
-		else:
-			var bus = script.new()
-			if bus == null:
-				push_error("Failed to instantiate autoload: %s" % script_path)
-			else:
-				bus.name = "EventBus"
-				get_root().add_child(bus)
-				Engine.set_meta("_event_bus_instance", bus)
+	_install_test_autoload("EventBus", "_event_bus_instance")
+	_install_test_autoload("RunState", "_run_state_instance")
+	_install_test_autoload("SaveManager", "_save_manager_instance")
+	_install_test_autoload("SceneManager", "_scene_manager_instance")
+	_install_test_autoload("GameRunner", "_game_runner_autoload_instance")
 
-	var run_state_setting = String(ProjectSettings.get_setting("autoload/RunState", ""))
-	if run_state_setting.is_empty():
+
+func _install_test_autoload(autoload_name: String, meta_key: String) -> void:
+	var setting = String(ProjectSettings.get_setting("autoload/" + autoload_name, ""))
+	if setting.is_empty():
 		return
-	var run_state_script_path := run_state_setting.trim_prefix("*")
-	var run_state_script = load(run_state_script_path)
-	if run_state_script == null:
-		push_error("Failed to load autoload script: %s" % run_state_script_path)
+	var script_path := setting.trim_prefix("*")
+	var script = load(script_path)
+	if script == null:
+		push_error("Failed to load autoload script: %s" % script_path)
 		return
-	var run_state = run_state_script.new()
-	if run_state == null:
-		push_error("Failed to instantiate autoload: %s" % run_state_script_path)
+	var instance = script.new()
+	if instance == null:
+		push_error("Failed to instantiate autoload: %s" % script_path)
 		return
-	run_state.name = "RunState"
-	get_root().add_child(run_state)
-	Engine.set_meta("_run_state_instance", run_state)
+	instance.name = autoload_name
+	get_root().add_child(instance)
+	Engine.set_meta(meta_key, instance)
 
 func _run_test_file(path: String):
 	var script = load(path) as GDScript
