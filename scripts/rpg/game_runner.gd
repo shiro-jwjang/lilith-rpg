@@ -58,9 +58,9 @@ func _emit_presentation(sig_name: StringName, arg) -> void:
 	emit_signal(sig_name, arg)
 
 const PARTY_CONFIGS := [
-	{"name": "리나", "hp": 120, "mp": 30, "atk": 14, "def": 8, "speed": 12, "class": "warrior"},
-	{"name": "카이", "hp": 150, "mp": 20, "atk": 10, "def": 14, "speed": 8, "class": "guardian"},
-	{"name": "세리아", "hp": 80, "mp": 60, "atk": 16, "def": 5, "speed": 15, "class": "mage"},
+	{"name": "리나", "hp": 120, "mp": 30, "atk": 14, "def": 8, "speed": 12, "class": "warrior", "crit_rate": 0.10, "effect_hit": 0.05, "effect_resist": 0.0},
+	{"name": "카이", "hp": 150, "mp": 20, "atk": 10, "def": 14, "speed": 8, "class": "guardian", "crit_rate": 0.05, "effect_hit": 0.05, "effect_resist": 0.05},
+	{"name": "세리아", "hp": 80, "mp": 60, "atk": 16, "def": 5, "speed": 15, "class": "mage", "crit_rate": 0.08, "effect_hit": 0.10, "effect_resist": 0.05},
 ]
 
 const PARTY_SKILL_SOURCES := {
@@ -408,24 +408,66 @@ func player_attack(skill_index: int) -> Dictionary:
 				"skill": skill,
 			})
 		_:
+			var skill_target := String(skill.get("target", "single"))
+			var multiplier := float(skill.get("multiplier", 1.0))
+			if skill_target == "all":
+				var all_targets: Array = []
+				for enemy in battle_manager.enemies:
+					if enemy.is_alive():
+						all_targets.append(enemy)
+				if all_targets.size() == 0:
+					return {"ok": false, "error": "No living enemy"}
+
+				var total_damage := 0
+				var target_results: Array = []
+				for enemy_target in all_targets:
+					var target_is_critical: bool = rng.randf() < float(_current_turn.crit_rate)
+					var base_damage := DAMAGE_CALCULATOR_SCRIPT.calculate_base_damage(_current_turn.atk, multiplier, enemy_target.def)
+					var final_damage := DAMAGE_CALCULATOR_SCRIPT.apply_critical(base_damage, target_is_critical)
+					enemy_target.take_damage(final_damage)
+					total_damage += final_damage
+					var status_result: Dictionary = _apply_skill_statuses(_current_turn, enemy_target, skill)
+					target_results.append({
+						"target_name": String(enemy_target.name),
+						"damage": final_damage,
+						"target_hp": int(enemy_target.current_hp),
+						"statuses_applied": status_result.get("statuses_applied", []).duplicate(true),
+						"statuses_missed": status_result.get("statuses_missed", []).duplicate(true),
+						"is_critical": target_is_critical,
+					})
+
+				if battle_manager != null and battle_manager.has_method("check_boss_phase_transition"):
+					battle_manager.check_boss_phase_transition()
+				return _finalize_player_action({
+					"ok": true,
+					"effect_type": "damage",
+					"damage": total_damage,
+					"skill": skill,
+					"target_name": "전체 적",
+					"target_count": all_targets.size(),
+					"target_results": target_results,
+				})
+
 			var target = _first_living_enemy()
 			if target == null:
 				return {"ok": false, "error": "No living enemy"}
-			var multiplier := float(skill.get("multiplier", 1.0))
-			var damage := DAMAGE_CALCULATOR_SCRIPT.calculate_base_damage(_current_turn.atk, multiplier, target.def)
-			target.take_damage(damage)
+			var is_critical: bool = rng.randf() < float(_current_turn.crit_rate)
+			var base_damage := DAMAGE_CALCULATOR_SCRIPT.calculate_base_damage(_current_turn.atk, multiplier, target.def)
+			var final_damage := DAMAGE_CALCULATOR_SCRIPT.apply_critical(base_damage, is_critical)
+			target.take_damage(final_damage)
 			var status_result := _apply_skill_statuses(_current_turn, target, skill)
 			if battle_manager != null and battle_manager.has_method("check_boss_phase_transition"):
 				battle_manager.check_boss_phase_transition()
 			return _finalize_player_action({
 				"ok": true,
 				"effect_type": "damage",
-				"damage": damage,
+				"damage": final_damage,
 				"skill": skill,
 				"target_name": String(target.name),
 				"target_hp": int(target.current_hp),
 				"statuses_applied": status_result.get("statuses_applied", []).duplicate(true),
 				"statuses_missed": status_result.get("statuses_missed", []).duplicate(true),
+				"is_critical": is_critical,
 			})
 
 
@@ -743,6 +785,9 @@ func _build_default_party(party_configs: Array) -> Array:
 			"atk": int(config_value.get("atk", 0)),
 			"def": int(config_value.get("def", 0)),
 			"speed": int(config_value.get("speed", 0)),
+			"crit_rate": float(config_value.get("crit_rate", 0.0)),
+			"effect_hit": float(config_value.get("effect_hit", 0.0)),
+			"effect_resist": float(config_value.get("effect_resist", 0.0)),
 			"taunt_turns": int(config_value.get("taunt_turns", 0)),
 			"skills": content_data.get_skills_for_character(skill_source),
 		})
@@ -762,6 +807,9 @@ func _build_party_battle_configs() -> Array:
 			"atk": int(member.get("atk", 0)),
 			"def": int(member.get("def", 0)),
 			"speed": int(member.get("speed", 0)),
+			"crit_rate": float(member.get("crit_rate", 0.0)),
+			"effect_hit": float(member.get("effect_hit", 0.0)),
+			"effect_resist": float(member.get("effect_resist", 0.0)),
 			"taunt_turns": int(member.get("taunt_turns", 0)),
 			"internal_id": index + 1,
 			"skills": (member.get("skills", []) as Array).duplicate(true),
