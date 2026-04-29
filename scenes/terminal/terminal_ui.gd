@@ -23,6 +23,8 @@ var runner = null
 var _current_state: String = "idle"
 var _last_battle_type: String = ""
 var _battle_intro_shown: bool = false
+var _last_map_floor: int = -1
+var _last_battle_intro_hash: int = 0
 
 
 func _ready() -> void:
@@ -128,8 +130,12 @@ func _on_message(text: String) -> void:
 
 
 func _on_map_state(state: Dictionary) -> void:
-	_current_state = "map"
 	var floor_num: int = int(state.get("current_floor", 1))
+	var state_hash := hash(floor_num * 1000 + state.get("available_nodes", []).size())
+	if state_hash == _last_map_floor and _current_state == "map":
+		return
+	_last_map_floor = state_hash
+	_current_state = "map"
 	append_text("")
 	append_text("[color=yellow]═══ %d층 ═══[/color]" % floor_num)
 	append_text("[color=gray]%s[/color]" % _floor_intro_text(floor_num))
@@ -150,9 +156,21 @@ func _on_map_state(state: Dictionary) -> void:
 
 
 func _on_battle_state(state: Dictionary) -> void:
-	_current_state = "combat"
 	var allies: Array = state.get("allies", [])
 	var enemies: Array = state.get("enemies", [])
+	# 방어: 동일 전투 상태가 연속으로 수신되면 무시 (웹 빌드 중복 시그널 대응)
+	var ally_hp_sum := 0
+	for a in allies:
+		ally_hp_sum += int(a.get("current_hp", 0))
+	var enemy_hp_sum := 0
+	for e in enemies:
+		enemy_hp_sum += int(e.get("current_hp", 0))
+	var state_key := ally_hp_sum * 10000 + enemy_hp_sum
+	if state_key == _last_battle_intro_hash and _current_state == "combat":
+		return
+	_last_battle_intro_hash = state_key
+
+	_current_state = "combat"
 
 	_update_party_status(allies)
 
