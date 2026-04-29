@@ -26,7 +26,7 @@ func _setup() -> void:
 	_rich_text.anchor_bottom = 1.0
 	_rich_text.bbcode_enabled = true
 	_rich_text.scroll_following = true
-	_rich_text.add_theme_font_override("normal_font", font)
+	_rich_text.add_theme_font_override("normal_font", _create_font_with_emoji_fallback(font))
 	_rich_text.add_theme_font_size_override("normal_font_size", font_size)
 	add_child(_rich_text)
 
@@ -67,3 +67,18 @@ func _on_copy_pressed() -> void:
 		return
 	DisplayServer.clipboard_set(_rich_text.get_parsed_text())
 	append_text("[color=gray]로그를 클립보드에 복사했다.[/color]")
+
+
+func _create_font_with_emoji_fallback(font: Font) -> FontVariation:
+	var fallback_font := SystemFont.new()
+	fallback_font.font_names = [
+		"Noto Color Emoji",
+		"Apple Color Emoji",
+		"Segoe UI Emoji",
+		"Noto Sans Symbols 2",
+	]
+
+	var font_with_fallback := FontVariation.new()
+	font_with_fallback.base_font = font
+	font_with_fallback.fallbacks = [fallback_font]
+	return font_with_fallback

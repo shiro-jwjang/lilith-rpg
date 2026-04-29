@@ -52,7 +52,7 @@ func _setup_ui() -> void:
 	status_label.bbcode_enabled = true
 	status_label.scroll_active = false
 	status_label.fit_content = true
-	status_label.add_theme_font_override("normal_font", font)
+	status_label.add_theme_font_override("normal_font", _create_font_with_emoji_fallback(font))
 	status_label.add_theme_font_size_override("normal_font_size", font_size)
 	add_child(status_label)
 
@@ -91,6 +91,21 @@ func _setup_ui() -> void:
 	version_label.add_theme_font_size_override("font_size", 12)
 	version_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7, 0.8))
 	add_child(version_label)
+
+
+func _create_font_with_emoji_fallback(font: Font) -> FontVariation:
+	var fallback_font := SystemFont.new()
+	fallback_font.font_names = [
+		"Noto Color Emoji",
+		"Apple Color Emoji",
+		"Segoe UI Emoji",
+		"Noto Sans Symbols 2",
+	]
+
+	var font_with_fallback := FontVariation.new()
+	font_with_fallback.base_font = font
+	font_with_fallback.fallbacks = [fallback_font]
+	return font_with_fallback
 
 
 func _connect_runner() -> void:
