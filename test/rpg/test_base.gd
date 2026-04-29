@@ -68,3 +68,22 @@ func _record_failure(message: String) -> void:
 func _message_or_default(message: String, default_message: String) -> String:
 	return default_message if message.is_empty() else message
 
+
+func _normalize_enemy_config(enemy: Dictionary) -> Dictionary:
+	var max_hp := int(enemy.get("max_hp", enemy.get("hp", 0)))
+	return {
+		"name": String(enemy.get("name", "")),
+		"max_hp": max_hp,
+		"current_hp": max_hp,
+		"max_mp": int(enemy.get("max_mp", enemy.get("mp", 0))),
+		"current_mp": int(enemy.get("max_mp", enemy.get("mp", 0))),
+		"atk": int(enemy.get("atk", enemy.get("attack", 0))),
+		"def": int(enemy.get("def", enemy.get("defense", 0))),
+		"speed": int(enemy.get("speed", 0)),
+		"tier": String(enemy.get("tier", "normal")),
+		"phases": int(enemy.get("phases", 1)),
+		"phase_transition_hp": int(enemy.get("phase_transition_hp", 0)),
+		"skills": (enemy.get("skills", []) as Array).duplicate(true),
+		"status_effects": {"enemy_status_names": (enemy.get("status_effects", []) as Array).duplicate(true)},
+	}
+
