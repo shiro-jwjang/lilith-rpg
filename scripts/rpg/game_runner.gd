@@ -1148,6 +1148,29 @@ func _node_to_dict(node) -> Dictionary:
 func _units_to_status_array(units: Array) -> Array:
 	var result: Array = []
 	for unit in units:
+		var statuses: Array = []
+		if unit.active_statuses is Dictionary:
+			for status_type in ["출혈", "화상", "둔화", "약화", "파쇄", "기절"]:
+				if not unit.active_statuses.has(status_type):
+					continue
+				var status_info = unit.active_statuses[status_type]
+				if not (status_info is Dictionary):
+					continue
+				var stacks: int = int(status_info.get("stacks", 0))
+				var duration: int = int(status_info.get("duration", 0))
+				if stacks <= 0 or duration <= 0:
+					continue
+				statuses.append({
+					"type": String(status_type),
+					"stacks": stacks,
+					"duration": duration,
+				})
+		if int(unit.taunt_turns) > 0:
+			statuses.append({
+				"type": "도발",
+				"stacks": 1,
+				"duration": int(unit.taunt_turns),
+			})
 		result.append({
 			"internal_id": int(unit.internal_id),
 			"name": String(unit.name),
@@ -1159,6 +1182,7 @@ func _units_to_status_array(units: Array) -> Array:
 			"atk": int(unit.atk),
 			"def": int(unit.def),
 			"speed": int(unit.speed),
+			"statuses": statuses,
 			"taunt_turns": int(unit.taunt_turns),
 			"alive": bool(unit.is_alive()),
 		})

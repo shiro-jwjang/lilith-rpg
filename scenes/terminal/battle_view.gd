@@ -5,6 +5,16 @@ var text_log = null
 var choice_panel = null
 var state_holder = null
 
+const STATUS_ICONS := {
+	"출혈": "🩸",
+	"화상": "🔥",
+	"둔화": "❄️",
+	"약화": "💢",
+	"파쇄": "⚡",
+	"기절": "💫",
+	"도발": "🛡️",
+}
+
 
 func setup(runner_ref, text_log_ref, choice_panel_ref, state_ref) -> void:
 	runner = runner_ref
@@ -63,9 +73,10 @@ func render_battle_state(state: Dictionary) -> void:
 			var e_name: String = String(enemy.get("name", "적%d" % int(enemy.get("internal_id", 0))))
 			var hp: int = int(enemy.get("current_hp", 0))
 			var max_hp: int = int(enemy.get("max_hp", 1))
+			var status_suffix := _format_unit_status_icons(enemy)
 			if bool(enemy.get("alive", true)):
 				enemy_names.append("[color=red]%s[/color]" % e_name)
-				append_text("  [color=red]%s[/color] HP: %d/%d" % [e_name, hp, max_hp])
+				append_text("  [color=red]%s[/color] HP: %d/%d%s" % [e_name, hp, max_hp, status_suffix])
 			else:
 				append_text("  [color=gray]%s (처치)[/color]" % e_name)
 
@@ -184,11 +195,12 @@ func auto_advance_combat() -> void:
 			var target_name := String(auto_action.get("target_name", ""))
 			if target_name.is_empty():
 				target_name = get_ally_name(target_id)
+			var status_applied_text := _format_status_application_text(auto_action.get("statuses_applied", []))
 			if is_ally:
 				var enemy_name := target_name if not target_name.is_empty() else "적"
-				append_text("  [color=cyan]%s[/color]이(가) %s에게 %d 데미지!" % [unit_name, enemy_name, damage])
+				append_text("  [color=cyan]%s[/color]이(가) %s에게 %d 데미지!%s" % [unit_name, enemy_name, damage, status_applied_text])
 			else:
-				append_text("  [color=red]%s[/color]이(가) %s에게 %d 데미지!" % [unit_name, target_name, damage])
+				append_text("  [color=red]%s[/color]이(가) %s에게 %d 데미지!%s" % [unit_name, target_name, damage, status_applied_text])
 			continue
 
 		if bool(turn_result.get("action_allowed", false)) and is_ally:
@@ -239,11 +251,12 @@ func process_follow_up(turn_result: Dictionary) -> void:
 			var target_name := String(auto_action.get("target_name", ""))
 			if target_name.is_empty():
 				target_name = get_ally_name(target_id)
+			var status_applied_text := _format_status_application_text(auto_action.get("statuses_applied", []))
 			if is_ally:
 				var enemy_name := target_name if not target_name.is_empty() else "적"
-				append_text("  [color=cyan]%s[/color]이(가) %s에게 %d 데미지!" % [unit_name, enemy_name, damage])
+				append_text("  [color=cyan]%s[/color]이(가) %s에게 %d 데미지!%s" % [unit_name, enemy_name, damage, status_applied_text])
 			else:
-				append_text("  [color=red]%s[/color]이(가) %s에게 %d 데미지!" % [unit_name, target_name, damage])
+				append_text("  [color=red]%s[/color]이(가) %s에게 %d 데미지!%s" % [unit_name, target_name, damage, status_applied_text])
 			turn_result = runner.next_turn()
 			continue
 
@@ -272,10 +285,51 @@ func update_party_status(allies: Array) -> void:
 		var hp: int = int(ally.get("current_hp", 0))
 		var max_hp: int = int(ally.get("max_hp", 1))
 		var mp: int = int(ally.get("current_mp", 0))
+		var status_suffix := _format_unit_status_icons(ally)
 		if i > 0:
 			text += " │ "
-		text += "%s HP:%d/%d MP:%d" % [name, hp, max_hp, mp]
+		text += "%s HP:%d/%d MP:%d%s" % [name, hp, max_hp, mp, status_suffix]
 	state_holder.status_label.append_text(text)
+
+
+func _format_unit_status_icons(unit: Dictionary) -> String:
+	var rendered: Array = []
+	var statuses = unit.get("statuses", [])
+	if statuses is Array:
+		for status_entry in statuses:
+			if not (status_entry is Dictionary):
+				continue
+			var status_type := String(status_entry.get("type", ""))
+			var stacks: int = int(status_entry.get("stacks", 0))
+			var duration: int = int(status_entry.get("duration", 0))
+			if status_type.is_empty() or stacks <= 0 or duration <= 0:
+				continue
+			var icon := String(STATUS_ICONS.get(status_type, ""))
+			if icon.is_empty():
+				continue
+			var label := icon
+			if stacks > 1:
+				label += "×%d" % stacks
+			rendered.append(label)
+	if rendered.is_empty():
+		return ""
+	return " " + " ".join(rendered)
+
+
+func _format_status_application_text(statuses_applied) -> String:
+	if not (statuses_applied is Array) or statuses_applied.is_empty():
+		return ""
+	var rendered: Array = []
+	for status_name in statuses_applied:
+		var status_type := String(status_name)
+		var icon := String(STATUS_ICONS.get(status_type, ""))
+		if icon.is_empty():
+			rendered.append(status_type)
+		else:
+			rendered.append("%s%s" % [icon, status_type])
+	if rendered.is_empty():
+		return ""
+	return " [color=yellow](%s 부여)[/color]" % ", ".join(rendered)
 
 
 func get_ally_name(target_internal_id: int) -> String:
