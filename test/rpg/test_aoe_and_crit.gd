@@ -80,6 +80,7 @@ func test_aoe_uses_aoe_multiplier() -> void:
 	_enter_combat_with_enemies(["녹슨 검병"])
 	_configure_turn_order(20, 19, 18, 10)
 	_advance_to_specific_ally_turn("리나")
+	runner.battle_manager.allies[0].crit_rate = 0.0
 	var enemy_def: int = int(runner.battle_manager.enemies[0].def)
 	var attacker_atk: int = int(runner.battle_manager.allies[0].atk)
 	var expected_damage: int = max(1, int(floor(float(attacker_atk) * 0.7)) - enemy_def)
