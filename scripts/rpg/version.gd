@@ -1,3 +1,3 @@
 extends RefCounted
 
-const VERSION := "0.1.15"
+const VERSION := "0.1.16"
