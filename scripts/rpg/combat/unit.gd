@@ -11,6 +11,10 @@ var speed: int = 0
 var internal_id: int = 0
 var is_ally: bool = false
 var alive: bool = true
+var tier: String = "normal"
+var phases: int = 1
+var phase_2_triggered: bool = false
+var phase_transition_hp: int = 0
 var status_effects: Dictionary = {}
 
 
@@ -25,6 +29,10 @@ func _init(config: Dictionary = {}) -> void:
 	speed = int(config.get("speed", 0))
 	internal_id = int(config.get("internal_id", 0))
 	is_ally = bool(config.get("is_ally", false))
+	tier = String(config.get("tier", "normal"))
+	phases = int(config.get("phases", 1))
+	phase_2_triggered = bool(config.get("phase_2_triggered", false))
+	phase_transition_hp = int(config.get("phase_transition_hp", 0))
 	status_effects = config.get("status_effects", {}).duplicate(true)
 	current_hp = clamp(current_hp, 0, max_hp)
 	current_mp = clamp(current_mp, 0, max_mp)

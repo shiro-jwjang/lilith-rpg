@@ -18,6 +18,7 @@ var turn_manager = TURN_MANAGER_SCRIPT.new()
 var battle_result = null
 var target_turn_range: Dictionary = TARGET_TURNS_BY_TIER["normal"].duplicate(true)
 var _run_terminated: bool = false
+var _boss_phase_transition_checker = Callable()
 
 
 func init_battle(ally_configs: Array, enemy_configs: Array) -> void:
@@ -55,6 +56,7 @@ func next_turn() -> Dictionary:
 
 	var action_allowed := turn_manager.on_turn_start(unit)
 	var dot_damage := turn_manager.on_turn_end(unit)
+	check_boss_phase_transition()
 	battle_result = check_battle_end()
 
 	return {
@@ -63,6 +65,45 @@ func next_turn() -> Dictionary:
 		"dot_damage": dot_damage,
 		"battle_result": battle_result,
 	}
+
+
+func set_boss_phase_transition_checker(checker: Callable) -> void:
+	_boss_phase_transition_checker = checker
+
+
+func check_boss_phase_transition() -> bool:
+	var transitioned := false
+	for unit in enemies:
+		if not unit.is_alive():
+			continue
+		if String(unit.tier) != "boss":
+			continue
+		if int(unit.phases) < 2:
+			continue
+		if bool(unit.phase_2_triggered):
+			continue
+		if int(unit.phase_transition_hp) <= 0:
+			continue
+		var should_transition := int(unit.current_hp) <= int(unit.phase_transition_hp)
+		if _boss_phase_transition_checker.is_valid():
+			should_transition = bool(_boss_phase_transition_checker.call(int(unit.current_hp)))
+		if not should_transition:
+			continue
+		unit.phase_2_triggered = true
+		transitioned = true
+		_emit_boss_phase_changed(unit)
+	return transitioned
+
+
+func _emit_boss_phase_changed(unit) -> void:
+	var bus = null
+	var main_loop = Engine.get_main_loop()
+	if main_loop != null and main_loop is SceneTree:
+		bus = main_loop.root.get_node_or_null("EventBus")
+	if bus == null:
+		bus = Engine.get_meta("_event_bus_instance", null)
+	if bus != null and bus.has_signal("boss_phase_changed"):
+		bus.emit_signal("boss_phase_changed", unit)
 
 
 func check_battle_end():

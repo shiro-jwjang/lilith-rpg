@@ -257,6 +257,8 @@ func enter_node() -> Dictionary:
 func enter_combat(enemy_configs: Array) -> void:
 	_current_battle_type = _resolve_battle_type(enemy_configs)
 	battle_manager.init_battle(_build_party_battle_configs(), enemy_configs)
+	if battle_manager != null and battle_manager.has_method("set_boss_phase_transition_checker"):
+		battle_manager.set_boss_phase_transition_checker(Callable(content_data, "should_boss_transition_phase"))
 	_current_turn = null
 	_emit_presentation("battle_state_changed", get_battle_status())
 
@@ -355,6 +357,8 @@ func player_attack(skill_index: int) -> Dictionary:
 	var multiplier := float(skill.get("multiplier", 1.0))
 	var damage := DAMAGE_CALCULATOR_SCRIPT.calculate_base_damage(_current_turn.atk, multiplier, target.def)
 	target.take_damage(damage)
+	if battle_manager != null and battle_manager.has_method("check_boss_phase_transition"):
+		battle_manager.check_boss_phase_transition()
 	_sync_party_from_battle()
 	_current_turn = null
 
@@ -857,16 +861,22 @@ func _normalize_enemy_array(source: Array) -> Array:
 
 
 func _normalize_enemy_config(enemy: Dictionary) -> Dictionary:
+	var max_hp := int(enemy.get("max_hp", enemy.get("hp", 0)))
+	var phase_transition_hp := int(enemy.get("phase_transition_hp", 0))
+	if String(enemy.get("tier", "normal")) == "boss" and phase_transition_hp <= 0:
+		phase_transition_hp = max_hp / 2
 	return {
 		"name": String(enemy.get("name", "")),
-		"max_hp": int(enemy.get("max_hp", enemy.get("hp", 0))),
-		"current_hp": int(enemy.get("max_hp", enemy.get("hp", 0))),
+		"max_hp": max_hp,
+		"current_hp": max_hp,
 		"max_mp": int(enemy.get("max_mp", enemy.get("mp", 0))),
 		"current_mp": int(enemy.get("max_mp", enemy.get("mp", 0))),
 		"atk": int(enemy.get("atk", enemy.get("attack", 0))),
 		"def": int(enemy.get("def", enemy.get("defense", 0))),
 		"speed": int(enemy.get("speed", 0)),
 		"tier": String(enemy.get("tier", "normal")),
+		"phases": int(enemy.get("phases", 1)),
+		"phase_transition_hp": phase_transition_hp,
 		"skills": (enemy.get("skills", []) as Array).duplicate(true),
 		"status_effects": {"enemy_status_names": (enemy.get("status_effects", []) as Array).duplicate(true)},
 	}
