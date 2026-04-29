@@ -345,16 +345,17 @@ func player_attack(skill_index: int) -> Dictionary:
 		return {"ok": false, "error": "Invalid skill index"}
 
 	var skill: Dictionary = skills[skill_index]
+	var mp_cost := int(skill.get("mp_cost", 0))
+	if int(_current_turn.current_mp) < mp_cost:
+		return {"ok": false, "error": "MP가 부족합니다"}
+	_current_turn.use_mp(mp_cost)
+
 	var effect := String(skill.get("effect", ""))
 	match effect:
 		"heal_max_hp_percent":
 			var heal_target = _find_ally_needing_heal()
 			if heal_target == null:
 				return {"ok": false, "error": "No living ally"}
-			var mp_cost := int(skill.get("mp_cost", 0))
-			if int(_current_turn.current_mp) < mp_cost:
-				return {"ok": false, "error": "MP가 부족합니다"}
-			_current_turn.use_mp(mp_cost)
 			var heal_percent := float(skill.get("value", 0.0))
 			var heal_amount := int(floor(float(heal_target.max_hp) * heal_percent))
 			var hp_before := int(heal_target.current_hp)
@@ -369,10 +370,6 @@ func player_attack(skill_index: int) -> Dictionary:
 			})
 		"def_boost":
 			var actor_name := String(_current_turn.name)
-			var mp_cost := int(skill.get("mp_cost", 0))
-			if int(_current_turn.current_mp) < mp_cost:
-				return {"ok": false, "error": "MP가 부족합니다"}
-			_current_turn.use_mp(mp_cost)
 			var boost_value := float(skill.get("value", 0.0))
 			_current_turn.def = int(floor(float(_current_turn.def) * (1.0 + boost_value)))
 			return _finalize_player_action({
@@ -383,10 +380,6 @@ func player_attack(skill_index: int) -> Dictionary:
 				"skill": skill,
 			})
 		"taunt":
-			var mp_cost := int(skill.get("mp_cost", 0))
-			if int(_current_turn.current_mp) < mp_cost:
-				return {"ok": false, "error": "MP가 부족합니다"}
-			_current_turn.use_mp(mp_cost)
 			return _finalize_player_action({
 				"ok": true,
 				"effect_type": "taunt",
@@ -397,10 +390,6 @@ func player_attack(skill_index: int) -> Dictionary:
 			var target = _first_living_enemy()
 			if target == null:
 				return {"ok": false, "error": "No living enemy"}
-			var mp_cost := int(skill.get("mp_cost", 0))
-			if int(_current_turn.current_mp) < mp_cost:
-				return {"ok": false, "error": "MP가 부족합니다"}
-			_current_turn.use_mp(mp_cost)
 			var multiplier := float(skill.get("multiplier", 1.0))
 			var damage := DAMAGE_CALCULATOR_SCRIPT.calculate_base_damage(_current_turn.atk, multiplier, target.def)
 			target.take_damage(damage)
