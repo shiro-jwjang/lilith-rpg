@@ -21,6 +21,30 @@ signal message_logged(text: String)
 signal run_ended(result: Dictionary)
 
 
+func _get_run_state() -> Node:
+	var main_loop = Engine.get_main_loop()
+	if main_loop != null and main_loop is SceneTree:
+		var run_state = main_loop.root.get_node_or_null("RunState")
+		if run_state != null:
+			return run_state
+	return Engine.get_meta("_run_state_instance", null)
+
+
+func _sync_run_state_from_dict() -> void:
+	var rs = _get_run_state()
+	if rs == null:
+		return
+	rs.victory = bool(run_state.get("victory", false))
+	rs.defeat = bool(run_state.get("defeat", false))
+	rs.ended = bool(run_state.get("ended", false))
+	rs.current_floor = int(run_state.get("current_floor", 1))
+	rs.floors_cleared = int(run_state.get("floors_cleared", 0))
+	rs.nodes_visited = run_state.get("nodes_visited", []).duplicate(true)
+	rs.combats_won = int(run_state.get("combats_won", 0))
+	rs.gold_earned = int(run_state.get("gold_earned", 0))
+	rs.current_node_id = String(run_state.get("current_node_id", ""))
+
+
 func _emit_presentation(sig_name: StringName, arg) -> void:
 	var bus = null
 	var main_loop = Engine.get_main_loop()
@@ -151,6 +175,10 @@ func start_run(config: Dictionary = {}) -> void:
 	_last_shop_visit = {}
 	_last_treasure_result = {}
 
+	var rs = _get_run_state()
+	if rs != null:
+		rs.start_new_run()
+
 	run_state = {
 		"victory": false,
 		"defeat": false,
@@ -166,6 +194,7 @@ func start_run(config: Dictionary = {}) -> void:
 	var act: Dictionary = config.get("act", _config.get("act", {}))
 	map_manager = MAP_MANAGER_SCRIPT.new(act)
 	run_state["current_floor"] = map_manager.current_floor_number
+	_sync_run_state_from_dict()
 	_emit_map_state()
 
 
@@ -185,6 +214,7 @@ func select_node(node_id: String) -> Dictionary:
 
 	current_node = result.get("node", null)
 	run_state["current_node_id"] = String(node_id)
+	_sync_run_state_from_dict()
 	_emit_map_state()
 	return {
 		"ok": true,
@@ -251,6 +281,7 @@ func next_turn() -> Dictionary:
 			elif battle_result == "defeat":
 				run_state["defeat"] = true
 				run_state["ended"] = true
+				_sync_run_state_from_dict()
 				_emit_presentation("run_ended", {"victory": false, "reason": "defeat"})
 			return turn_result
 
@@ -264,6 +295,7 @@ func next_turn() -> Dictionary:
 			if battle_result == "defeat":
 				run_state["defeat"] = true
 				run_state["ended"] = true
+				_sync_run_state_from_dict()
 				_emit_presentation("run_ended", {"victory": false, "reason": "defeat"})
 			return turn_result
 
@@ -287,6 +319,7 @@ func next_turn() -> Dictionary:
 			if battle_end == "defeat":
 				run_state["defeat"] = true
 				run_state["ended"] = true
+				_sync_run_state_from_dict()
 				_emit_presentation("run_ended", {"victory": false, "reason": "defeat"})
 			_emit_presentation("battle_state_changed", get_battle_status())
 			return turn_result
@@ -384,6 +417,7 @@ func complete_combat() -> Dictionary:
 	var gold_earned := int(rewards.get("gold", 0))
 	run_state["combats_won"] = int(run_state.get("combats_won", 0)) + 1
 	run_state["gold_earned"] = int(run_state.get("gold_earned", 0)) + gold_earned
+	_sync_run_state_from_dict()
 	return {
 		"rewards": rewards,
 		"grant_result": grant_result,
@@ -413,6 +447,7 @@ func resolve_event_choice(choice_id: String) -> Dictionary:
 		if not rewards.is_empty():
 			reward_manager.grant_rewards(rewards, inventory)
 			run_state["gold_earned"] = int(run_state.get("gold_earned", 0)) + int(rewards.get("gold", 0))
+			_sync_run_state_from_dict()
 			result["granted_rewards"] = rewards
 	return result
 
@@ -511,6 +546,7 @@ func advance_floor() -> bool:
 	run_state["current_floor"] = map_manager.current_floor_number
 	current_node = null
 	run_state["current_node_id"] = ""
+	_sync_run_state_from_dict()
 	_last_treasure_result = {}
 	_emit_map_state()
 	return true
@@ -540,6 +576,7 @@ func complete_node(defer_floor_advance: bool = false) -> Dictionary:
 	var visited: Array = run_state.get("nodes_visited", [])
 	visited.append(String(current_node.id))
 	run_state["nodes_visited"] = visited
+	_sync_run_state_from_dict()
 
 	if String(current_node.type) == "boss":
 		run_state["victory"] = true
@@ -547,6 +584,7 @@ func complete_node(defer_floor_advance: bool = false) -> Dictionary:
 		run_state["floors_cleared"] = 3
 		current_node = null
 		run_state["current_node_id"] = ""
+		_sync_run_state_from_dict()
 		_current_turn = null
 		_emit_presentation("run_ended", get_run_summary())
 
@@ -558,6 +596,7 @@ func complete_node(defer_floor_advance: bool = false) -> Dictionary:
 			advance_floor()
 
 	run_state["current_floor"] = map_manager.current_floor_number
+	_sync_run_state_from_dict()
 	return result
 
 
@@ -598,6 +637,7 @@ func enter_treasure() -> Dictionary:
 	var rewards: Dictionary = reward_generator.generate_treasure_rewards()
 	var grant_result: Dictionary = reward_manager.grant_rewards(rewards, inventory)
 	run_state["gold_earned"] = int(run_state.get("gold_earned", 0)) + int(rewards.get("gold", 0))
+	_sync_run_state_from_dict()
 	return {"rewards": rewards, "grant_result": grant_result}
 
 

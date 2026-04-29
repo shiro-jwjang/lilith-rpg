@@ -23,3 +23,4 @@ window/stretch/aspect="keep"
 
 [autoload]
 EventBus="*res://autoload/event_bus.gd"
+RunState="*res://autoload/run_state.gd"
