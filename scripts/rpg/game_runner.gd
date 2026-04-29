@@ -288,7 +288,7 @@ func next_turn() -> Dictionary:
 		var acting_unit = turn_result.get("unit", null)
 		if acting_unit != null and bool(acting_unit.is_ally):
 			_expire_pending_taunt()
-		_process_active_status_turn(acting_unit, turn_result)
+			_process_active_status_turn(acting_unit, turn_result)
 		battle_result = turn_result.get("battle_result", battle_result)
 		_sync_party_from_battle()
 
@@ -333,6 +333,8 @@ func next_turn() -> Dictionary:
 
 		# 적 턴 — 한 턴만 처리하고 결과 반환
 		var auto_action := _execute_enemy_turn(acting_unit)
+		_process_active_status_turn(acting_unit, turn_result)
+		_expire_pending_taunt()
 		_sync_party_from_battle()
 		var battle_end = battle_manager.check_battle_end()
 		if battle_end != null:
