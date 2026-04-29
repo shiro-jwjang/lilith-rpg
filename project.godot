@@ -22,3 +22,4 @@ window/stretch/aspect="keep"
 [file_res]
 
 [autoload]
+EventBus="*res://autoload/event_bus.gd"

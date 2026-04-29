@@ -8,6 +8,8 @@ var _fail_count: int = 0
 var _fail_messages: Array = []
 
 func _init():
+	_install_test_autoloads()
+
 	# Pre-load implementation scripts (order matters: base first)
 	load("res://scripts/rpg/data/base_record.gd")
 	var impl_dir = DirAccess.open("res://scripts/rpg/data/")
@@ -54,6 +56,24 @@ func _init():
 	else:
 		print("\n  ✅ ALL TESTS PASSED\n")
 		quit(0)
+
+
+func _install_test_autoloads() -> void:
+	var bus_setting = String(ProjectSettings.get_setting("autoload/EventBus", ""))
+	if bus_setting.is_empty():
+		return
+	var script_path := bus_setting.trim_prefix("*")
+	var script = load(script_path)
+	if script == null:
+		push_error("Failed to load autoload script: %s" % script_path)
+		return
+	var bus = script.new()
+	if bus == null:
+		push_error("Failed to instantiate autoload: %s" % script_path)
+		return
+	bus.name = "EventBus"
+	get_root().add_child(bus)
+	Engine.set_meta("_event_bus_instance", bus)
 
 func _run_test_file(path: String):
 	var script = load(path) as GDScript

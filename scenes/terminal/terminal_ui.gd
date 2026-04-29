@@ -113,16 +113,29 @@ func _setup_ui() -> void:
 func _connect_runner() -> void:
 	if runner == null:
 		return
-	if not runner.battle_state_changed.is_connected(_on_battle_state):
-		runner.battle_state_changed.connect(_on_battle_state)
-	if not runner.map_state_changed.is_connected(_on_map_state):
-		runner.map_state_changed.connect(_on_map_state)
-	if not runner.player_input_requested.is_connected(_on_input_requested):
-		runner.player_input_requested.connect(_on_input_requested)
-	if not runner.message_logged.is_connected(_on_message):
-		runner.message_logged.connect(_on_message)
-	if not runner.run_ended.is_connected(_on_run_ended):
-		runner.run_ended.connect(_on_run_ended)
+	var bus = get_node_or_null("/root/EventBus")
+	if bus == null:
+		if not runner.battle_state_changed.is_connected(_on_battle_state):
+			runner.battle_state_changed.connect(_on_battle_state)
+		if not runner.map_state_changed.is_connected(_on_map_state):
+			runner.map_state_changed.connect(_on_map_state)
+		if not runner.player_input_requested.is_connected(_on_input_requested):
+			runner.player_input_requested.connect(_on_input_requested)
+		if not runner.message_logged.is_connected(_on_message):
+			runner.message_logged.connect(_on_message)
+		if not runner.run_ended.is_connected(_on_run_ended):
+			runner.run_ended.connect(_on_run_ended)
+		return
+	if not bus.battle_state_changed.is_connected(_on_battle_state):
+		bus.battle_state_changed.connect(_on_battle_state)
+	if not bus.map_state_changed.is_connected(_on_map_state):
+		bus.map_state_changed.connect(_on_map_state)
+	if not bus.player_input_requested.is_connected(_on_input_requested):
+		bus.player_input_requested.connect(_on_input_requested)
+	if not bus.message_logged.is_connected(_on_message):
+		bus.message_logged.connect(_on_message)
+	if not bus.run_ended.is_connected(_on_run_ended):
+		bus.run_ended.connect(_on_run_ended)
 
 
 func _on_message(text: String) -> void:

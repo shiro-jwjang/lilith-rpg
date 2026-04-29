@@ -20,6 +20,18 @@ signal player_input_requested(choices: Array)
 signal message_logged(text: String)
 signal run_ended(result: Dictionary)
 
+
+func _emit_presentation(sig_name: StringName, arg) -> void:
+	var bus = null
+	var main_loop = Engine.get_main_loop()
+	if main_loop != null and main_loop is SceneTree:
+		bus = main_loop.root.get_node_or_null("EventBus")
+	if bus == null:
+		bus = Engine.get_meta("_event_bus_instance", null)
+	if bus != null and bus.has_signal(sig_name):
+		bus.emit_signal(sig_name, arg)
+	emit_signal(sig_name, arg)
+
 const PARTY_CONFIGS := [
 	{"name": "리나", "hp": 120, "mp": 30, "atk": 14, "def": 8, "speed": 12, "class": "warrior"},
 	{"name": "카이", "hp": 150, "mp": 20, "atk": 10, "def": 14, "speed": 8, "class": "guardian"},
@@ -216,7 +228,7 @@ func enter_combat(enemy_configs: Array) -> void:
 	_current_battle_type = _resolve_battle_type(enemy_configs)
 	battle_manager.init_battle(_build_party_battle_configs(), enemy_configs)
 	_current_turn = null
-	emit_signal("battle_state_changed", get_battle_status())
+	_emit_presentation("battle_state_changed", get_battle_status())
 
 
 func next_turn() -> Dictionary:
@@ -233,37 +245,37 @@ func next_turn() -> Dictionary:
 
 		if battle_result != null and acting_unit == null:
 			_current_turn = null
-			emit_signal("battle_state_changed", get_battle_status())
+			_emit_presentation("battle_state_changed", get_battle_status())
 			if battle_result == "victory":
 				pass
 			elif battle_result == "defeat":
 				run_state["defeat"] = true
 				run_state["ended"] = true
-				emit_signal("run_ended", {"victory": false, "reason": "defeat"})
+				_emit_presentation("run_ended", {"victory": false, "reason": "defeat"})
 			return turn_result
 
 		if acting_unit == null:
-			emit_signal("battle_state_changed", get_battle_status())
+			_emit_presentation("battle_state_changed", get_battle_status())
 			return turn_result
 
 		if battle_result != null:
 			_current_turn = null
-			emit_signal("battle_state_changed", get_battle_status())
+			_emit_presentation("battle_state_changed", get_battle_status())
 			if battle_result == "defeat":
 				run_state["defeat"] = true
 				run_state["ended"] = true
-				emit_signal("run_ended", {"victory": false, "reason": "defeat"})
+				_emit_presentation("run_ended", {"victory": false, "reason": "defeat"})
 			return turn_result
 
 		if not bool(turn_result.get("action_allowed", false)) or not acting_unit.is_alive():
-			emit_signal("battle_state_changed", get_battle_status())
+			_emit_presentation("battle_state_changed", get_battle_status())
 			return turn_result
 
 		if bool(acting_unit.is_ally):
 			_current_turn = acting_unit
 			var choices := _choices_for_unit(acting_unit)
-			emit_signal("battle_state_changed", get_battle_status())
-			emit_signal("player_input_requested", choices)
+			_emit_presentation("battle_state_changed", get_battle_status())
+			_emit_presentation("player_input_requested", choices)
 			return turn_result
 
 		# 적 턴 — 한 턴만 처리하고 결과 반환
@@ -275,11 +287,11 @@ func next_turn() -> Dictionary:
 			if battle_end == "defeat":
 				run_state["defeat"] = true
 				run_state["ended"] = true
-				emit_signal("run_ended", {"victory": false, "reason": "defeat"})
-			emit_signal("battle_state_changed", get_battle_status())
+				_emit_presentation("run_ended", {"victory": false, "reason": "defeat"})
+			_emit_presentation("battle_state_changed", get_battle_status())
 			return turn_result
 		turn_result["auto_action"] = auto_action
-		emit_signal("battle_state_changed", get_battle_status())
+		_emit_presentation("battle_state_changed", get_battle_status())
 		return turn_result
 	return {}
 
@@ -385,7 +397,7 @@ func enter_event(event_id: String) -> Dictionary:
 	if event != null:
 		event_title = String(event.title)
 	var choices: Array = event_manager.get_visible_choices(event_id, _event_context())
-	emit_signal("player_input_requested", choices)
+	_emit_presentation("player_input_requested", choices)
 	return {"event_id": event_id, "title": event_title, "choices": choices}
 
 
@@ -536,7 +548,7 @@ func complete_node(defer_floor_advance: bool = false) -> Dictionary:
 		current_node = null
 		run_state["current_node_id"] = ""
 		_current_turn = null
-		emit_signal("run_ended", get_run_summary())
+		_emit_presentation("run_ended", get_run_summary())
 
 	# 보스가 아니면 다음 층으로 이동
 	if not bool(run_state.get("ended", false)):
@@ -911,7 +923,7 @@ func _units_to_status_array(units: Array) -> Array:
 
 
 func _emit_map_state() -> void:
-	emit_signal("map_state_changed", _map_state())
+	_emit_presentation("map_state_changed", _map_state())
 
 
 func _map_state() -> Dictionary:
