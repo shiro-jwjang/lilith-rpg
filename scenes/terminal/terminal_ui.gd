@@ -23,6 +23,7 @@ var _last_battle_type: String = ""
 var _battle_intro_shown: bool = false
 var _last_map_floor: int = -1
 var _last_battle_intro_hash: int = 0
+var _suppress_next_input_request: bool = false
 
 
 func _ready() -> void:
@@ -135,7 +136,16 @@ func _on_battle_state(state: Dictionary) -> void:
 
 
 func _on_input_requested(choices: Array) -> void:
-	if battle_view != null:
+	if _suppress_next_input_request:
+		_suppress_next_input_request = false
+		return
+	if _current_state == "combat":
+		if battle_view != null:
+			battle_view.render_input_choices(choices)
+		return
+	if map_view != null:
+		map_view.render_input_choices(choices)
+	elif battle_view != null:
 		battle_view.render_input_choices(choices)
 
 

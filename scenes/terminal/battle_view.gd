@@ -157,6 +157,7 @@ func auto_advance_combat() -> void:
 				append_text("[color=green]전투 승리![/color]")
 				if state_holder != null and state_holder._last_battle_type == "boss":
 					append_text("[color=gold]보스를 쓰러뜨렸다![/color]")
+				clear_choices()
 				var complete_result: Dictionary = runner.complete_node(true)
 				var combat_data: Dictionary = complete_result.get("combat", {})
 				var gold: int = int(combat_data.get("gold_earned", 0))
@@ -211,6 +212,7 @@ func process_follow_up(turn_result: Dictionary) -> void:
 				append_text("[color=green]전투 승리![/color]")
 				if state_holder != null and state_holder._last_battle_type == "boss":
 					append_text("[color=gold]보스를 쓰러뜨렸다![/color]")
+				clear_choices()
 				var complete_result: Dictionary = runner.complete_node(true)
 				var combat_data: Dictionary = complete_result.get("combat", {})
 				var gold: int = int(combat_data.get("gold_earned", 0))

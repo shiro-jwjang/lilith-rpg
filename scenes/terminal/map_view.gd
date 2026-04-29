@@ -72,8 +72,11 @@ func handle_node_selected(node_id: String) -> void:
 		append_text("[color=red]오류: %s[/color]" % String(result.get("error", "")))
 		return
 
+	clear_choices()
 	var node: Dictionary = result.get("node", {})
 	var node_type: String = String(node.get("type", ""))
+	if node_type == "event" and state_holder != null:
+		state_holder._suppress_next_input_request = true
 	var enter_result: Dictionary = runner.enter_node()
 
 	match node_type:
@@ -95,11 +98,14 @@ func handle_node_selected(node_id: String) -> void:
 				state_holder._current_state = "event"
 			var event_data: Dictionary = enter_result.get("data", {})
 			var event_title: String = String(event_data.get("title", "이벤트"))
+			var event_id: String = String(event_data.get("event_id", ""))
 			append_text("")
 			append_text("[color=purple][b]── %s ──[/b][/color]" % event_title)
+			var flavor_text := get_event_flavor(event_id)
+			if not flavor_text.is_empty():
+				append_text("[color=gray]%s[/color]" % flavor_text)
 			var choices: Array = event_data.get("choices", [])
-			if state_holder != null:
-				state_holder._on_input_requested(choices)
+			render_input_choices(choices)
 		"shop":
 			show_shop(enter_result.get("data", {}))
 		"campfire":
@@ -111,6 +117,16 @@ func handle_node_selected(node_id: String) -> void:
 			var gold: int = int(rewards.get("gold", 0))
 			if gold > 0:
 				append_text("[color=gold]골드 %d를 획득했다![/color]" % gold)
+			var relics: Array = rewards.get("relics", [])
+			for relic in relics:
+				var relic_name := _relic_display_name(relic)
+				append_text("[color=purple]%s이(가) 빛나고 있다... 유물을 획득했다![/color]" % relic_name)
+			var items: Array = rewards.get("items", [])
+			for item in items:
+				var item_name := _item_display_name(item)
+				append_text("[color=green]%s을(를) 발견했다![/color]" % item_name)
+			show_inventory()
+			clear_choices()
 			runner.complete_node()
 
 
@@ -121,14 +137,28 @@ func handle_event_choice(choice_id: String, label: String) -> void:
 		append_text("[color=red]이벤트 처리 실패[/color]")
 		return
 
+	_show_event_outcome(choice_id, result)
+
 	var reward: Dictionary = result.get("granted_rewards", {})
 	var gold: int = int(reward.get("gold", 0))
 	if gold > 0:
 		append_text("[color=green]골드 %d를 획득했다![/color]" % gold)
 
+	var items: Array = reward.get("items", [])
+	for item in items:
+		var item_name := _item_display_name(item)
+		append_text("[color=green]%s을(를) 획득했다![/color]" % item_name)
+
+	var relics: Array = reward.get("relics", [])
+	for relic in relics:
+		var relic_name := _relic_display_name(relic)
+		append_text("[color=purple]%s을(를) 발견했다![/color]" % relic_name)
+
 	if bool(result.get("combat_triggered", false)):
 		append_text("[color=yellow]적들이 습격해온다![/color]")
 
+	show_inventory()
+	clear_choices()
 	runner.complete_node()
 
 
@@ -155,6 +185,7 @@ func handle_shop_buy(item_index: int) -> void:
 	var result: Dictionary = runner.shop_purchase(item_index)
 	if bool(result.get("success", false)):
 		append_text("[color=green]구매 완료![/color]")
+		show_inventory()
 		show_shop(runner.enter_shop())
 	else:
 		append_text("[color=red]%s[/color]" % String(result.get("error", result.get("reason", "구매 실패"))))
@@ -162,6 +193,7 @@ func handle_shop_buy(item_index: int) -> void:
 
 func handle_shop_leave() -> void:
 	append_text("[color=gray]상점을 나왔다.[/color]")
+	clear_choices()
 	runner.complete_node()
 
 
@@ -187,6 +219,7 @@ func handle_campfire_rest() -> void:
 	var result: Dictionary = runner.campfire_rest()
 	var healed: int = int(result.get("healed", 0))
 	append_text("[color=green]모닥불 옆에서 쉬었다. HP %d 회복![/color]" % healed)
+	clear_choices()
 	runner.complete_node()
 
 
@@ -202,7 +235,20 @@ func handle_campfire_invest(stat_name: String) -> void:
 
 func handle_campfire_leave() -> void:
 	append_text("[color=gray]모닥불의 온기가 등 뒤로 멀어진다.[/color]")
+	clear_choices()
 	runner.complete_node()
+
+
+func render_input_choices(choices: Array) -> void:
+	clear_choices()
+	append_text("")
+	append_text("[color=cyan]─ 선택지 ─[/color]")
+	for i in range(choices.size()):
+		var choice: Dictionary = choices[i]
+		var choice_id: String = String(choice.get("id", "choice_%d" % i))
+		var label := _event_choice_label(choice)
+		append_text("  [%d] %s" % [i + 1, label])
+		add_choice("%d. %s" % [i + 1, label], "_on_event_choice_selected", [choice_id, label])
 
 
 func show_party_narrative(party_status: Array) -> void:
@@ -230,3 +276,92 @@ func floor_intro_text(floor_num: int) -> String:
 			return "최상층이다. 붉은 달의 기운이 공기를 무겁게 짓누른다. 보스가 가까이 있다..."
 		_:
 			return "알 수 없는 층이다."
+
+
+func get_event_flavor(event_id: String) -> String:
+	match event_id:
+		"ruin_merchant":
+			return "낡은 천막 아래, 수상한 상인이 물건을 팔고 있다."
+		"ruined_altar":
+			return "부서진 제단에서 희미한 빛이 흘러나온다."
+		"sealed_ward":
+			return "봉인된 문이 길을 가로막고 있다."
+		"moonlight_rift":
+			return "달빛이 공간을 찢어 놓은 틈새가 보인다."
+		_:
+			return ""
+
+
+func show_inventory() -> void:
+	if runner == null or runner.inventory == null:
+		return
+
+	var inventory = runner.inventory
+	var lines: Array = []
+	var relic_entries: Array = []
+	for relic in inventory.relics:
+		relic_entries.append(String(relic))
+	if not relic_entries.is_empty():
+		lines.append("  유물: %s" % ", ".join(relic_entries))
+
+	var equipment_entries: Array = []
+	for item in inventory.equipment:
+		equipment_entries.append(String(item))
+	if not equipment_entries.is_empty():
+		lines.append("  장비: %s" % ", ".join(equipment_entries))
+
+	var potion_entries: Array = []
+	for potion_name in inventory.potions:
+		var count: int = int(inventory.potions[potion_name])
+		if count > 0:
+			potion_entries.append("%s x%d" % [String(potion_name), count])
+	if not potion_entries.is_empty():
+		lines.append("  포션: %s" % ", ".join(potion_entries))
+
+	if lines.is_empty():
+		return
+
+	append_text("[color=gray]── 인벤토리 ──[/color]")
+	for line in lines:
+		append_text(line)
+
+
+func _show_event_outcome(choice_id: String, result: Dictionary) -> void:
+	var combat_triggered := bool(result.get("combat_triggered", false))
+	var reward: Dictionary = result.get("reward", {})
+
+	match choice_id:
+		"강탈":
+			if combat_triggered:
+				append_text("[color=red]실패! 상인의 경호병이 나타났다![/color]")
+			else:
+				append_text("[color=gold]성공! 상인의 주머니에서 골드를 빼앗았다![/color]")
+		"구매":
+			append_text("[color=green]거래가 성사되었다.[/color]")
+		"특별 거래":
+			append_text("[color=green]특별한 장비를 손에 넣었다![/color]")
+		_:
+			if combat_triggered:
+				append_text("[color=red]선택의 대가로 위협이 모습을 드러냈다![/color]")
+			elif String(reward.get("type", "")) == "relic_candidate":
+				append_text("[color=green]희귀한 기운이 손끝에 스며든다.[/color]")
+			else:
+				append_text("[color=green]선택한 길을 따라갔다.[/color]")
+
+
+func _event_choice_label(choice: Dictionary) -> String:
+	var choice_text := String(choice.get("text", ""))
+	if not choice_text.is_empty():
+		return choice_text
+	var choice_id: String = String(choice.get("id", "선택"))
+	return "%s (선택)" % choice_id
+
+
+func _item_display_name(item: Dictionary) -> String:
+	return String(item.get("name", item.get("id", "아이템")))
+
+
+func _relic_display_name(relic) -> String:
+	if relic is Dictionary:
+		return String(relic.get("name", relic.get("id", "유물")))
+	return String(relic)
