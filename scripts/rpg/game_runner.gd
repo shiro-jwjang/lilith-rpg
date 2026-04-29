@@ -345,31 +345,75 @@ func player_attack(skill_index: int) -> Dictionary:
 		return {"ok": false, "error": "Invalid skill index"}
 
 	var skill: Dictionary = skills[skill_index]
-	var target = _first_living_enemy()
-	if target == null:
-		return {"ok": false, "error": "No living enemy"}
-
-	var mp_cost := int(skill.get("mp_cost", 0))
-	if int(_current_turn.current_mp) < mp_cost:
-		return {"ok": false, "error": "MP가 부족합니다"}
-
-	_current_turn.use_mp(mp_cost)
-	var multiplier := float(skill.get("multiplier", 1.0))
-	var damage := DAMAGE_CALCULATOR_SCRIPT.calculate_base_damage(_current_turn.atk, multiplier, target.def)
-	target.take_damage(damage)
-	if battle_manager != null and battle_manager.has_method("check_boss_phase_transition"):
-		battle_manager.check_boss_phase_transition()
-	_sync_party_from_battle()
-	_current_turn = null
-
-	var follow_up := next_turn()
-	return {
-		"ok": true,
-		"damage": damage,
-		"skill": skill,
-		"target_hp": int(target.current_hp),
-		"next_turn": follow_up,
-	}
+	var effect := String(skill.get("effect", ""))
+	match effect:
+		"heal_max_hp_percent":
+			var heal_target = _find_ally_needing_heal()
+			if heal_target == null:
+				return {"ok": false, "error": "No living ally"}
+			var mp_cost := int(skill.get("mp_cost", 0))
+			if int(_current_turn.current_mp) < mp_cost:
+				return {"ok": false, "error": "MP가 부족합니다"}
+			_current_turn.use_mp(mp_cost)
+			var heal_percent := float(skill.get("value", 0.0))
+			var heal_amount := int(floor(float(heal_target.max_hp) * heal_percent))
+			var hp_before := int(heal_target.current_hp)
+			heal_target.heal(heal_amount)
+			var actual_heal := int(heal_target.current_hp) - hp_before
+			return _finalize_player_action({
+				"ok": true,
+				"effect_type": "heal",
+				"heal_amount": actual_heal,
+				"target_name": String(heal_target.name),
+				"skill": skill,
+			})
+		"def_boost":
+			var actor_name := String(_current_turn.name)
+			var mp_cost := int(skill.get("mp_cost", 0))
+			if int(_current_turn.current_mp) < mp_cost:
+				return {"ok": false, "error": "MP가 부족합니다"}
+			_current_turn.use_mp(mp_cost)
+			var boost_value := float(skill.get("value", 0.0))
+			_current_turn.def = int(floor(float(_current_turn.def) * (1.0 + boost_value)))
+			return _finalize_player_action({
+				"ok": true,
+				"effect_type": "buff",
+				"buff_type": "def_boost",
+				"target_name": actor_name,
+				"skill": skill,
+			})
+		"taunt":
+			var mp_cost := int(skill.get("mp_cost", 0))
+			if int(_current_turn.current_mp) < mp_cost:
+				return {"ok": false, "error": "MP가 부족합니다"}
+			_current_turn.use_mp(mp_cost)
+			return _finalize_player_action({
+				"ok": true,
+				"effect_type": "taunt",
+				"target_name": "전체 적",
+				"skill": skill,
+			})
+		_:
+			var target = _first_living_enemy()
+			if target == null:
+				return {"ok": false, "error": "No living enemy"}
+			var mp_cost := int(skill.get("mp_cost", 0))
+			if int(_current_turn.current_mp) < mp_cost:
+				return {"ok": false, "error": "MP가 부족합니다"}
+			_current_turn.use_mp(mp_cost)
+			var multiplier := float(skill.get("multiplier", 1.0))
+			var damage := DAMAGE_CALCULATOR_SCRIPT.calculate_base_damage(_current_turn.atk, multiplier, target.def)
+			target.take_damage(damage)
+			if battle_manager != null and battle_manager.has_method("check_boss_phase_transition"):
+				battle_manager.check_boss_phase_transition()
+			return _finalize_player_action({
+				"ok": true,
+				"effect_type": "damage",
+				"damage": damage,
+				"skill": skill,
+				"target_name": String(target.name),
+				"target_hp": int(target.current_hp),
+			})
 
 
 func player_use_potion(potion_name: String, target_index: int) -> Dictionary:
@@ -816,6 +860,32 @@ func _first_living_ally():
 		if ally.is_alive():
 			return ally
 	return null
+
+
+func _find_ally_needing_heal():
+	if battle_manager == null:
+		return null
+	var selected = null
+	var lowest_ratio := 2.0
+	for ally in battle_manager.allies:
+		if not ally.is_alive():
+			continue
+		var ratio := 1.0
+		if int(ally.max_hp) > 0:
+			ratio = float(ally.current_hp) / float(ally.max_hp)
+		if selected == null or ratio < lowest_ratio:
+			selected = ally
+			lowest_ratio = ratio
+	return selected
+
+
+func _finalize_player_action(result: Dictionary) -> Dictionary:
+	_sync_party_from_battle()
+	_current_turn = null
+	var follow_up := next_turn()
+	var finalized := result.duplicate(true)
+	finalized["next_turn"] = follow_up
+	return finalized
 
 
 func _get_enemy_configs_for_tier(tier: String) -> Array:

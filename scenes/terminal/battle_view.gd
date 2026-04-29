@@ -122,8 +122,21 @@ func handle_skill_selected(skill_index: int) -> void:
 	var skill: Dictionary = result.get("skill", {})
 	var damage: int = int(result.get("damage", 0))
 	var skill_name: String = String(skill.get("name", "공격"))
+	var effect_type: String = String(result.get("effect_type", "damage"))
+	var target_name: String = String(result.get("target_name", "적"))
 
-	append_text("  [color=cyan]%s[/color]의 [b]%s[/b]! %d 데미지!" % [actor_name, skill_name, damage])
+	match effect_type:
+		"heal":
+			var heal_amount: int = int(result.get("heal_amount", 0))
+			append_text("  [color=green]%s[/color]이(가) %s을(를) 치유! HP %d 회복!" % [actor_name, target_name, heal_amount])
+		"buff":
+			append_text("  [color=blue]%s[/color]이(가) [b]%s[/b]을(를) 사용했다!" % [actor_name, skill_name])
+		"taunt":
+			append_text("  [color=yellow]%s[/color]이(가) 적의 주의를 끌었다!" % actor_name)
+		"damage":
+			append_text("  [color=cyan]%s[/color]의 [b]%s[/b]! %s에게 %d 데미지!" % [actor_name, skill_name, target_name, damage])
+		_:
+			append_text("  [color=cyan]%s[/color]의 [b]%s[/b]! %d 데미지!" % [actor_name, skill_name, damage])
 
 	var follow_up: Dictionary = result.get("next_turn", {})
 	process_follow_up(follow_up)
@@ -167,9 +180,12 @@ func auto_advance_combat() -> void:
 		if auto_action != null:
 			var target_id: int = int(auto_action.get("target_internal_id", 0))
 			var damage: int = int(auto_action.get("damage", 0))
-			var target_name := get_ally_name(target_id)
+			var target_name := String(auto_action.get("target_name", ""))
+			if target_name.is_empty():
+				target_name = get_ally_name(target_id)
 			if is_ally:
-				append_text("  [color=cyan]%s[/color]이(가) 적에게 %d 데미지!" % [unit_name, damage])
+				var enemy_name := target_name if not target_name.is_empty() else "적"
+				append_text("  [color=cyan]%s[/color]이(가) %s에게 %d 데미지!" % [unit_name, enemy_name, damage])
 			else:
 				append_text("  [color=red]%s[/color]이(가) %s에게 %d 데미지!" % [unit_name, target_name, damage])
 			continue
@@ -218,9 +234,12 @@ func process_follow_up(turn_result: Dictionary) -> void:
 		if auto_action != null:
 			var target_id: int = int(auto_action.get("target_internal_id", 0))
 			var damage: int = int(auto_action.get("damage", 0))
-			var target_name := get_ally_name(target_id)
+			var target_name := String(auto_action.get("target_name", ""))
+			if target_name.is_empty():
+				target_name = get_ally_name(target_id)
 			if is_ally:
-				append_text("  [color=cyan]%s[/color]이(가) 적에게 %d 데미지!" % [unit_name, damage])
+				var enemy_name := target_name if not target_name.is_empty() else "적"
+				append_text("  [color=cyan]%s[/color]이(가) %s에게 %d 데미지!" % [unit_name, enemy_name, damage])
 			else:
 				append_text("  [color=red]%s[/color]이(가) %s에게 %d 데미지!" % [unit_name, target_name, damage])
 			turn_result = runner.next_turn()
