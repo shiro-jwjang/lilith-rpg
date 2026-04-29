@@ -2,6 +2,8 @@ extends Control
 
 const BuildVersion = preload("res://scripts/rpg/version.gd")
 const UI_FONT = preload("res://assets/fonts/NotoSansKR.tres")
+const TextLogScript = preload("res://scenes/terminal/components/text_log.gd")
+const ChoicePanelScript = preload("res://scenes/terminal/components/choice_panel.gd")
 const NODE_DISPLAY_NAMES := {
 	"combat": "⚔ 일반 전투",
 	"elite": "⚔ 정예 전투",
@@ -18,6 +20,8 @@ var choice_container: VBoxContainer = null
 var status_label: RichTextLabel = null
 var copy_log_button: Button = null
 var version_label: Label = null
+var text_log_component = null
+var choice_panel = null
 
 var runner = null
 var _current_state: String = "idle"
@@ -55,30 +59,10 @@ func _setup_ui() -> void:
 	status_label.add_theme_font_size_override("normal_font_size", font_size)
 	add_child(status_label)
 
-	text_log = RichTextLabel.new()
-	text_log.anchor_top = 0.10
-	text_log.anchor_right = 1.0
-	text_log.anchor_bottom = 0.75
-	text_log.bbcode_enabled = true
-	text_log.scroll_following = true
-	text_log.add_theme_font_override("normal_font", font)
-	text_log.add_theme_font_size_override("normal_font_size", font_size)
-	add_child(text_log)
-
-	copy_log_button = Button.new()
-	copy_log_button.text = "로그 복사"
-	copy_log_button.anchor_left = 1.0
-	copy_log_button.anchor_top = 0.10
-	copy_log_button.anchor_right = 1.0
-	copy_log_button.anchor_bottom = 0.10
-	copy_log_button.offset_left = -116.0
-	copy_log_button.offset_top = 8.0
-	copy_log_button.offset_right = -16.0
-	copy_log_button.offset_bottom = 40.0
-	copy_log_button.add_theme_font_override("font", font)
-	copy_log_button.add_theme_font_size_override("font_size", 14)
-	copy_log_button.pressed.connect(_on_copy_log_pressed)
-	add_child(copy_log_button)
+	text_log_component = TextLogScript.new()
+	add_child(text_log_component)
+	text_log = text_log_component._rich_text
+	copy_log_button = text_log_component._copy_button
 
 	var scroll := ScrollContainer.new()
 	scroll.anchor_top = 0.78
@@ -86,10 +70,12 @@ func _setup_ui() -> void:
 	scroll.anchor_bottom = 1.0
 	add_child(scroll)
 
-	choice_container = VBoxContainer.new()
-	choice_container.anchor_right = 1.0
-	choice_container.anchor_bottom = 1.0
-	scroll.add_child(choice_container)
+	choice_panel = ChoicePanelScript.new()
+	choice_panel.anchor_right = 1.0
+	choice_panel.anchor_bottom = 1.0
+	choice_panel.setup(self)
+	scroll.add_child(choice_panel)
+	choice_container = choice_panel
 
 	version_label = Label.new()
 	version_label.anchor_left = 1.0
@@ -565,22 +551,18 @@ func _on_campfire_leave() -> void:
 
 
 func _on_restart() -> void:
-	text_log.clear()
+	if text_log_component != null:
+		text_log_component.clear_log()
 	append_text("[color=cyan][b]── 새로운 모험이 시작된다 ──[/b][/color]")
 	append_text("")
 	runner.start_run()
 
 
 func append_text(text: String) -> void:
-	if text_log != null:
-		text_log.append_text(text + "\n")
-
-
-func _on_copy_log_pressed() -> void:
-	if text_log == null:
-		return
-	DisplayServer.clipboard_set(text_log.get_parsed_text())
-	append_text("[color=gray]로그를 클립보드에 복사했다.[/color]")
+	if text_log_component != null:
+		text_log_component.append_text(text)
+		text_log = text_log_component._rich_text
+		copy_log_button = text_log_component._copy_button
 
 
 func _show_party_narrative(party_status: Array) -> void:
@@ -612,26 +594,15 @@ func _update_party_status(allies: Array) -> void:
 
 
 func _clear_choices() -> void:
-	if choice_container == null:
-		return
-	for child in choice_container.get_children():
-		child.queue_free()
+	if choice_panel != null:
+		choice_panel.clear_choices()
+		choice_container = choice_panel
 
 
 func _add_choice(text: String, method: String, args: Array) -> void:
-	if choice_container == null:
-		return
-	var button := Button.new()
-	button.text = text
-	var font: FontFile = UI_FONT
-	button.add_theme_font_override("font", font)
-	button.add_theme_font_size_override("font_size", 16)
-	button.pressed.connect(_make_choice_callback(method, args))
-	choice_container.add_child(button)
-
-
-func _make_choice_callback(method: String, args: Array) -> Callable:
-	return func() -> void: callv(method, args)
+	if choice_panel != null:
+		choice_panel.add_choice(text, method, args)
+		choice_container = choice_panel
 
 
 func _node_display_name(node_type: String) -> String:
