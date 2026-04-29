@@ -2,6 +2,13 @@ extends RefCounted
 
 
 func select_target(target_type: String, allies: Array, effect_type: String = ""):
+	var taunter: Dictionary = {}
+	for ally in allies:
+		if int(ally.get("taunt_turns", 0)) > 0:
+			taunter = ally
+	if not taunter.is_empty():
+		return taunter
+
 	match target_type:
 		"single":
 			return _select_lowest_hp_ratio(allies)

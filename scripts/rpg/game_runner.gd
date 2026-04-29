@@ -87,6 +87,7 @@ var _config: Dictionary = {}
 var _normal_ai = null
 var _enemy_ai = null
 var _current_turn = null
+var _pending_taunt_expire_unit = null
 var _current_battle_type: String = "normal"
 var _last_shop_visit: Dictionary = {}
 var _last_treasure_result: Dictionary = {}
@@ -171,6 +172,7 @@ func start_run(config: Dictionary = {}) -> void:
 	party = _build_default_party(config.get("party_configs", PARTY_CONFIGS))
 	current_node = null
 	_current_turn = null
+	_pending_taunt_expire_unit = null
 	_current_battle_type = "normal"
 	_last_shop_visit = {}
 	_last_treasure_result = {}
@@ -260,6 +262,7 @@ func enter_combat(enemy_configs: Array) -> void:
 	if battle_manager != null and battle_manager.has_method("set_boss_phase_transition_checker"):
 		battle_manager.set_boss_phase_transition_checker(Callable(content_data, "should_boss_transition_phase"))
 	_current_turn = null
+	_pending_taunt_expire_unit = null
 	_emit_presentation("battle_state_changed", get_battle_status())
 
 
@@ -273,10 +276,13 @@ func next_turn() -> Dictionary:
 
 		var battle_result = turn_result.get("battle_result", null)
 		var acting_unit = turn_result.get("unit", null)
+		if acting_unit != null and bool(acting_unit.is_ally):
+			_expire_pending_taunt()
 		_sync_party_from_battle()
 
 		if battle_result != null and acting_unit == null:
 			_current_turn = null
+			_pending_taunt_expire_unit = null
 			_emit_presentation("battle_state_changed", get_battle_status())
 			if battle_result == "victory":
 				pass
@@ -293,6 +299,7 @@ func next_turn() -> Dictionary:
 
 		if battle_result != null:
 			_current_turn = null
+			_pending_taunt_expire_unit = null
 			_emit_presentation("battle_state_changed", get_battle_status())
 			if battle_result == "defeat":
 				run_state["defeat"] = true
@@ -380,6 +387,8 @@ func player_attack(skill_index: int) -> Dictionary:
 				"skill": skill,
 			})
 		"taunt":
+			_current_turn.apply_taunt(1)
+			_pending_taunt_expire_unit = _current_turn
 			return _finalize_player_action({
 				"ok": true,
 				"effect_type": "taunt",
@@ -719,6 +728,7 @@ func _build_default_party(party_configs: Array) -> Array:
 			"atk": int(config_value.get("atk", 0)),
 			"def": int(config_value.get("def", 0)),
 			"speed": int(config_value.get("speed", 0)),
+			"taunt_turns": int(config_value.get("taunt_turns", 0)),
 			"skills": content_data.get_skills_for_character(skill_source),
 		})
 	return built
@@ -737,6 +747,7 @@ func _build_party_battle_configs() -> Array:
 			"atk": int(member.get("atk", 0)),
 			"def": int(member.get("def", 0)),
 			"speed": int(member.get("speed", 0)),
+			"taunt_turns": int(member.get("taunt_turns", 0)),
 			"internal_id": index + 1,
 			"skills": (member.get("skills", []) as Array).duplicate(true),
 		})
@@ -765,6 +776,7 @@ func _execute_enemy_turn(unit) -> Dictionary:
 			"current_hp": int(ally.current_hp),
 			"max_hp": int(ally.max_hp),
 			"statuses": [],
+			"taunt_turns": int(ally.taunt_turns),
 		})
 	var target_choice = _enemy_ai.select_target(String(skill.get("target", "single")), ally_candidates, String(skill.get("effect", "")))
 	var target = null
@@ -817,6 +829,7 @@ func _sync_party_from_battle() -> void:
 		var unit = battle_manager.allies[index]
 		member["current_hp"] = int(unit.current_hp)
 		member["current_mp"] = int(unit.current_mp)
+		member["taunt_turns"] = int(unit.taunt_turns)
 		party[index] = member
 
 
@@ -1026,9 +1039,18 @@ func _units_to_status_array(units: Array) -> Array:
 			"atk": int(unit.atk),
 			"def": int(unit.def),
 			"speed": int(unit.speed),
+			"taunt_turns": int(unit.taunt_turns),
 			"alive": bool(unit.is_alive()),
 		})
 	return result
+
+
+func _expire_pending_taunt() -> void:
+	if _pending_taunt_expire_unit == null:
+		return
+	if is_instance_valid(_pending_taunt_expire_unit):
+		_pending_taunt_expire_unit.decrement_taunt()
+	_pending_taunt_expire_unit = null
 
 
 func _emit_map_state() -> void:

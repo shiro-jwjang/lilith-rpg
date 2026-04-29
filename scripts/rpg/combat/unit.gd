@@ -16,6 +16,7 @@ var phases: int = 1
 var phase_2_triggered: bool = false
 var phase_transition_hp: int = 0
 var status_effects: Dictionary = {}
+var taunt_turns: int = 0
 
 
 func _init(config: Dictionary = {}) -> void:
@@ -34,6 +35,7 @@ func _init(config: Dictionary = {}) -> void:
 	phase_2_triggered = bool(config.get("phase_2_triggered", false))
 	phase_transition_hp = int(config.get("phase_transition_hp", 0))
 	status_effects = config.get("status_effects", {}).duplicate(true)
+	taunt_turns = int(config.get("taunt_turns", 0))
 	current_hp = clamp(current_hp, 0, max_hp)
 	current_mp = clamp(current_mp, 0, max_mp)
 	alive = current_hp > 0
@@ -59,3 +61,16 @@ func use_mp(cost) -> bool:
 
 func is_alive() -> bool:
 	return alive
+
+
+func apply_taunt(turns: int) -> void:
+	taunt_turns = turns
+
+
+func decrement_taunt() -> void:
+	if taunt_turns > 0:
+		taunt_turns -= 1
+
+
+func is_taunting() -> bool:
+	return taunt_turns > 0
