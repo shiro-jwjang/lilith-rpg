@@ -25,6 +25,8 @@ var crit_rate: float = 0.0
 var effect_hit: float = 0.0
 var effect_resist: float = 0.0
 var base_speed: int = 0
+var base_atk: int = 0
+var base_def: int = 0
 var taunt_turns: int = 0
 
 
@@ -47,6 +49,8 @@ func _init(config: Dictionary = {}) -> void:
 	crit_rate = float(config.get("crit_rate", 0.0))
 	effect_hit = float(config.get("effect_hit", 0.0))
 	effect_resist = float(config.get("effect_resist", config.get("effect_resistance", 0.0)))
+	base_atk = int(config.get("atk", atk))
+	base_def = int(config.get("def", def))
 	base_speed = int(config.get("speed", speed))
 	active_statuses = {
 		"출혈": {"stacks": 0, "duration": 0},
@@ -61,6 +65,9 @@ func _init(config: Dictionary = {}) -> void:
 		for key in config_active_statuses:
 			if active_statuses.has(key):
 				active_statuses[key] = config_active_statuses[key].duplicate(true)
+	for effect_type in ["둔화", "약화", "파쇄"]:
+		if has_status(effect_type):
+			_apply_stat_modification(effect_type)
 	taunt_turns = int(config.get("taunt_turns", 0))
 	current_hp = clamp(current_hp, 0, max_hp)
 	current_mp = clamp(current_mp, 0, max_mp)
@@ -99,6 +106,7 @@ func apply_status(effect_type: String, stacks: int, duration: int) -> void:
 	else:
 		active_statuses[effect_type]["stacks"] = 1
 	active_statuses[effect_type]["duration"] = duration
+	_apply_stat_modification(effect_type)
 
 
 func has_status(effect_type: String) -> bool:
@@ -138,6 +146,7 @@ func process_turn_end_status() -> Dictionary:
 	for effect_type in expired:
 		active_statuses[effect_type]["stacks"] = 0
 		active_statuses[effect_type]["duration"] = 0
+		_restore_stat(effect_type)
 
 	return {
 		"tick_damage": tick_damage,
@@ -150,6 +159,27 @@ func clear_all_statuses() -> void:
 	for effect_type in active_statuses:
 		active_statuses[effect_type]["stacks"] = 0
 		active_statuses[effect_type]["duration"] = 0
+		_restore_stat(effect_type)
+
+
+func _apply_stat_modification(effect_type: String) -> void:
+	match effect_type:
+		"둔화":
+			speed = int(floor(float(base_speed) * 0.8))
+		"약화":
+			atk = int(floor(float(base_atk) * 0.8))
+		"파쇄":
+			def = int(floor(float(base_def) * 0.75))
+
+
+func _restore_stat(effect_type: String) -> void:
+	match effect_type:
+		"둔화":
+			speed = base_speed
+		"약화":
+			atk = base_atk
+		"파쇄":
+			def = base_def
 
 
 func apply_taunt(turns: int) -> void:
