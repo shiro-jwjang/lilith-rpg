@@ -24,12 +24,14 @@ func test_skill_damage_heavy_strike() -> void:
 	_setup_runner()
 	_enter_single_enemy_combat("녹슨 검병")
 	_advance_to_specific_ally_turn("리나")
+	runner.battle_manager.allies[0].crit_rate = 0.0
 	var basic_result: Dictionary = runner.player_attack(0)
 	var basic_damage := int(basic_result.get("damage", 0))
 
 	_setup_runner()
 	_enter_single_enemy_combat("녹슨 검병")
 	_advance_to_specific_ally_turn("리나")
+	runner.battle_manager.allies[0].crit_rate = 0.0
 	var heavy_result: Dictionary = runner.player_attack(1)
 	var heavy_damage := int(heavy_result.get("damage", 0))
 
