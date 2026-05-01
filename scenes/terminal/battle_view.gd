@@ -1,9 +1,5 @@
 extends RefCounted
-
-var runner = null
-var text_log = null
-var choice_panel = null
-var state_holder = null
+const UI_FONT = preload("res://assets/fonts/NotoSansKR.tres")
 
 const STATUS_ICONS := {
 	"출혈": "🩸",
@@ -15,12 +11,18 @@ const STATUS_ICONS := {
 	"도발": "🛡️",
 }
 
+var runner = null
+var text_log = null
+var choice_panel = null
+var state_holder = null
+
 
 func setup(runner_ref, text_log_ref, choice_panel_ref, state_ref) -> void:
 	runner = runner_ref
 	text_log = text_log_ref
 	choice_panel = choice_panel_ref
 	state_holder = state_ref
+	_apply_emoji_font_overrides()
 
 
 func append_text(text: String) -> void:
@@ -48,7 +50,11 @@ func render_battle_state(state: Dictionary) -> void:
 	for e in enemies:
 		enemy_hp_sum += int(e.get("current_hp", 0))
 	var state_key := ally_hp_sum * 10000 + enemy_hp_sum
-	if state_holder != null and state_key == state_holder._last_battle_intro_hash and state_holder._current_state == "combat":
+	if (
+		state_holder != null
+		and state_key == state_holder._last_battle_intro_hash
+		and state_holder._current_state == "combat"
+	):
 		return
 	if state_holder != null:
 		state_holder._last_battle_intro_hash = state_key
@@ -76,7 +82,9 @@ func render_battle_state(state: Dictionary) -> void:
 			var status_suffix := _format_unit_status_icons(enemy)
 			if bool(enemy.get("alive", true)):
 				enemy_names.append("[color=red]%s[/color]" % e_name)
-				append_text("  [color=red]%s[/color] HP: %d/%d%s" % [e_name, hp, max_hp, status_suffix])
+				append_text(
+					"  [color=red]%s[/color] HP: %d/%d%s" % [e_name, hp, max_hp, status_suffix]
+				)
 			else:
 				append_text("  [color=gray]%s (처치)[/color]" % e_name)
 
@@ -96,7 +104,9 @@ func render_input_choices(choices: Array) -> void:
 		var turn_unit = runner._current_turn
 		var turn_name := ""
 		if turn_unit != null:
-			turn_name = String(turn_unit.get("name", "")) if turn_unit.get("name", "") != "" else "아군"
+			turn_name = (
+				String(turn_unit.get("name", "")) if turn_unit.get("name", "") != "" else "아군"
+			)
 		append_text("")
 		if turn_name != "":
 			append_text("[color=yellow]▶ %s의 턴[/color]" % turn_name)
@@ -139,15 +149,29 @@ func handle_skill_selected(skill_index: int) -> void:
 	match effect_type:
 		"heal":
 			var heal_amount: int = int(result.get("heal_amount", 0))
-			append_text("  [color=green]%s[/color]이(가) %s을(를) 치유! HP %d 회복!" % [actor_name, target_name, heal_amount])
+			append_text(
+				(
+					"  [color=green]%s[/color]이(가) %s을(를) 치유! HP %d 회복!"
+					% [actor_name, target_name, heal_amount]
+				)
+			)
 		"buff":
-			append_text("  [color=blue]%s[/color]이(가) [b]%s[/b]을(를) 사용했다!" % [actor_name, skill_name])
+			append_text(
+				"  [color=blue]%s[/color]이(가) [b]%s[/b]을(를) 사용했다!" % [actor_name, skill_name]
+			)
 		"taunt":
 			append_text("  [color=yellow]%s[/color]이(가) 적의 주의를 끌었다!" % actor_name)
 		"damage":
-			append_text("  [color=cyan]%s[/color]의 [b]%s[/b]! %s에게 %d 데미지!" % [actor_name, skill_name, target_name, damage])
+			append_text(
+				(
+					"  [color=cyan]%s[/color]의 [b]%s[/b]! %s에게 %d 데미지!"
+					% [actor_name, skill_name, target_name, damage]
+				)
+			)
 		_:
-			append_text("  [color=cyan]%s[/color]의 [b]%s[/b]! %d 데미지!" % [actor_name, skill_name, damage])
+			append_text(
+				"  [color=cyan]%s[/color]의 [b]%s[/b]! %d 데미지!" % [actor_name, skill_name, damage]
+			)
 
 	var follow_up: Dictionary = result.get("next_turn", {})
 	process_follow_up(follow_up)
@@ -186,7 +210,11 @@ func auto_advance_combat() -> void:
 		if unit == null:
 			return
 
-		var unit_name: String = String(unit.get("name", "")) if unit.get("name", "") != "" else ("아군%d" % int(unit.get("internal_id", 0)))
+		var unit_name: String = (
+			String(unit.get("name", ""))
+			if unit.get("name", "") != ""
+			else ("아군%d" % int(unit.get("internal_id", 0)))
+		)
 		var is_ally := bool(unit.get("is_ally", false))
 
 		if auto_action != null:
@@ -195,12 +223,24 @@ func auto_advance_combat() -> void:
 			var target_name := String(auto_action.get("target_name", ""))
 			if target_name.is_empty():
 				target_name = get_ally_name(target_id)
-			var status_applied_text := _format_status_application_text(auto_action.get("statuses_applied", []))
+			var status_applied_text := _format_status_application_text(
+				auto_action.get("statuses_applied", [])
+			)
 			if is_ally:
 				var enemy_name := target_name if not target_name.is_empty() else "적"
-				append_text("  [color=cyan]%s[/color]이(가) %s에게 %d 데미지!%s" % [unit_name, enemy_name, damage, status_applied_text])
+				append_text(
+					(
+						"  [color=cyan]%s[/color]이(가) %s에게 %d 데미지!%s"
+						% [unit_name, enemy_name, damage, status_applied_text]
+					)
+				)
 			else:
-				append_text("  [color=red]%s[/color]이(가) %s에게 %d 데미지!%s" % [unit_name, target_name, damage, status_applied_text])
+				append_text(
+					(
+						"  [color=red]%s[/color]이(가) %s에게 %d 데미지!%s"
+						% [unit_name, target_name, damage, status_applied_text]
+					)
+				)
 			continue
 
 		if bool(turn_result.get("action_allowed", false)) and is_ally:
@@ -242,7 +282,11 @@ func process_follow_up(turn_result: Dictionary) -> void:
 		if unit == null:
 			return
 
-		var unit_name: String = String(unit.get("name", "")) if unit.get("name", "") != "" else ("아군%d" % int(unit.get("internal_id", 0)))
+		var unit_name: String = (
+			String(unit.get("name", ""))
+			if unit.get("name", "") != ""
+			else ("아군%d" % int(unit.get("internal_id", 0)))
+		)
 		var is_ally := bool(unit.get("is_ally", false))
 
 		if auto_action != null:
@@ -251,12 +295,24 @@ func process_follow_up(turn_result: Dictionary) -> void:
 			var target_name := String(auto_action.get("target_name", ""))
 			if target_name.is_empty():
 				target_name = get_ally_name(target_id)
-			var status_applied_text := _format_status_application_text(auto_action.get("statuses_applied", []))
+			var status_applied_text := _format_status_application_text(
+				auto_action.get("statuses_applied", [])
+			)
 			if is_ally:
 				var enemy_name := target_name if not target_name.is_empty() else "적"
-				append_text("  [color=cyan]%s[/color]이(가) %s에게 %d 데미지!%s" % [unit_name, enemy_name, damage, status_applied_text])
+				append_text(
+					(
+						"  [color=cyan]%s[/color]이(가) %s에게 %d 데미지!%s"
+						% [unit_name, enemy_name, damage, status_applied_text]
+					)
+				)
 			else:
-				append_text("  [color=red]%s[/color]이(가) %s에게 %d 데미지!%s" % [unit_name, target_name, damage, status_applied_text])
+				append_text(
+					(
+						"  [color=red]%s[/color]이(가) %s에게 %d 데미지!%s"
+						% [unit_name, target_name, damage, status_applied_text]
+					)
+				)
 			turn_result = runner.next_turn()
 			continue
 
@@ -339,3 +395,29 @@ func get_ally_name(target_internal_id: int) -> String:
 	if target_internal_id - 1 >= 0 and target_internal_id - 1 < party_status.size():
 		return String(party_status[target_internal_id - 1].get("name", "아군%d" % target_internal_id))
 	return "아군%d" % target_internal_id
+
+
+func _apply_emoji_font_overrides() -> void:
+	if text_log == null:
+		return
+	var rich_text: RichTextLabel = text_log._rich_text
+	if rich_text != null and is_instance_valid(rich_text):
+		rich_text.add_theme_font_override("normal_font", _create_font_with_emoji_fallback(UI_FONT))
+	if state_holder != null and state_holder.status_label != null:
+		state_holder.status_label.add_theme_font_override(
+			"normal_font", _create_font_with_emoji_fallback(UI_FONT)
+		)
+
+
+func _create_font_with_emoji_fallback(font: Font) -> FontVariation:
+	var fallback_font := SystemFont.new()
+	fallback_font.font_names = [
+		"Noto Color Emoji",
+		"Apple Color Emoji",
+		"Segoe UI Emoji",
+		"Noto Sans Symbols 2",
+	]
+	var font_with_fallback := FontVariation.new()
+	font_with_fallback.base_font = font
+	font_with_fallback.fallbacks = [fallback_font]
+	return font_with_fallback

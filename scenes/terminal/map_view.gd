@@ -1,9 +1,5 @@
 extends RefCounted
-
-var runner = null
-var text_log = null
-var choice_panel = null
-var state_holder = null
+const UI_FONT = preload("res://assets/fonts/NotoSansKR.tres")
 
 const NODE_DISPLAY_NAMES := {
 	"combat": "⚔ 일반 전투",
@@ -16,12 +12,18 @@ const NODE_DISPLAY_NAMES := {
 	"treasure": "💰 보물",
 }
 
+var runner = null
+var text_log = null
+var choice_panel = null
+var state_holder = null
+
 
 func setup(runner_ref, text_log_ref, choice_panel_ref, state_ref) -> void:
 	runner = runner_ref
 	text_log = text_log_ref
 	choice_panel = choice_panel_ref
 	state_holder = state_ref
+	_apply_emoji_font_overrides()
 
 
 func append_text(text: String) -> void:
@@ -42,7 +44,11 @@ func add_choice(text: String, method: String, args: Array) -> void:
 func render_map_state(state: Dictionary) -> void:
 	var floor_num: int = int(state.get("current_floor", 1))
 	var state_hash := hash(floor_num * 1000 + state.get("available_nodes", []).size())
-	if state_holder != null and state_hash == state_holder._last_map_floor and state_holder._current_state == "map":
+	if (
+		state_holder != null
+		and state_hash == state_holder._last_map_floor
+		and state_holder._current_state == "map"
+	):
 		return
 	if state_holder != null:
 		state_holder._last_map_floor = state_hash
@@ -188,7 +194,9 @@ func handle_shop_buy(item_index: int) -> void:
 		show_inventory()
 		show_shop(runner.enter_shop())
 	else:
-		append_text("[color=red]%s[/color]" % String(result.get("error", result.get("reason", "구매 실패"))))
+		append_text(
+			"[color=red]%s[/color]" % String(result.get("error", result.get("reason", "구매 실패")))
+		)
 
 
 func handle_shop_leave() -> void:
@@ -208,7 +216,12 @@ func show_campfire() -> void:
 	if party_status.size() > 0:
 		var leader: Dictionary = party_status[0]
 		var leader_name: String = String(leader.get("name", "리나"))
-		append_text("%s의 상태: HP %d/%d" % [leader_name, int(leader.get("current_hp", 0)), int(leader.get("max_hp", 0))])
+		append_text(
+			(
+				"%s의 상태: HP %d/%d"
+				% [leader_name, int(leader.get("current_hp", 0)), int(leader.get("max_hp", 0))]
+			)
+		)
 	add_choice("1. 휴식 (HP 회복)", "_on_campfire_rest", [])
 	add_choice("2. 투자 (ATK +1, 25G)", "_on_campfire_invest", ["atk"])
 	add_choice("3. 투자 (DEF +1, 25G)", "_on_campfire_invest", ["def"])
@@ -227,7 +240,12 @@ func handle_campfire_invest(stat_name: String) -> void:
 	var result: Dictionary = runner.campfire_invest(stat_name)
 	if bool(result.get("success", false)):
 		var stat_display := {"atk": "공격력", "def": "방어력"}
-		append_text("[color=green]%s이(가) 1 증가했다![/color]" % String(stat_display.get(stat_name, stat_name.to_upper())))
+		append_text(
+			(
+				"[color=green]%s이(가) 1 증가했다![/color]"
+				% String(stat_display.get(stat_name, stat_name.to_upper()))
+			)
+		)
 	else:
 		append_text("[color=red]%s[/color]" % String(result.get("error", "골드 부족!")))
 	show_campfire()
@@ -365,3 +383,25 @@ func _relic_display_name(relic) -> String:
 	if relic is Dictionary:
 		return String(relic.get("name", relic.get("id", "유물")))
 	return String(relic)
+
+
+func _apply_emoji_font_overrides() -> void:
+	if text_log == null:
+		return
+	var rich_text: RichTextLabel = text_log._rich_text
+	if rich_text != null and is_instance_valid(rich_text):
+		rich_text.add_theme_font_override("normal_font", _create_font_with_emoji_fallback(UI_FONT))
+
+
+func _create_font_with_emoji_fallback(font: Font) -> FontVariation:
+	var fallback_font := SystemFont.new()
+	fallback_font.font_names = [
+		"Noto Color Emoji",
+		"Apple Color Emoji",
+		"Segoe UI Emoji",
+		"Noto Sans Symbols 2",
+	]
+	var font_with_fallback := FontVariation.new()
+	font_with_fallback.base_font = font
+	font_with_fallback.fallbacks = [fallback_font]
+	return font_with_fallback
